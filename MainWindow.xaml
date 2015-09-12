@@ -5,16 +5,25 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ShaderBaker"
         xmlns:sharpGL="clr-namespace:SharpGL.WPF;assembly=SharpGL.WPF"
+        xmlns:vm="clr-namespace:ShaderBaker.ViewModel"
+        xmlns:vw="clr-namespace:ShaderBaker.View"
         mc:Ignorable="d"
-        Title="Shader Baker" Height="350" Width="650">
-    <Grid>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*" />
-            <ColumnDefinition Width="5" />
-            <ColumnDefinition Width="*" />
-        </Grid.ColumnDefinitions>
-        <TextBox Grid.Column="0" AcceptsReturn="True" TextWrapping="Wrap" FontFamily="Courier New" Background="#FF222222" Foreground="AntiqueWhite" FontSize="14" Text="#version 330&#xA;&#xA;out vec4 FragColor;&#xA;&#xA;void main()&#xA;{&#xA;    FragColor = vec4(1.0, 0.0, 0.0, 1.0);&#xA;}&#xA;"/>
-        <GridSplitter Grid.Column="1" Width="5" HorizontalAlignment="Stretch"/>
-        <sharpGL:OpenGLControl Grid.Column="2" OpenGLDraw="OpenGLControl_OpenGLDraw"/>
-    </Grid>
+        Title="Shader Baker" Height="350" Width="750">
+    <Window.Resources>
+        <DataTemplate DataType="{x:TypeExtension vm:ShaderTextViewModel}">
+            <vw:ShaderTextView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:TypeExtension vm:ShaderRenderViewModel}">
+            <vw:ShaderRenderView />
+        </DataTemplate>
+    </Window.Resources>
+    <UniformGrid>
+        <ItemsControl ItemsSource="{Binding ViewModels}">
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <UniformGrid Rows="1"/>
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+        </ItemsControl>
+    </UniformGrid>
 </Window>
