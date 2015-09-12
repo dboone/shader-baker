@@ -35,6 +35,18 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Apex">
+      <HintPath>..\..\Visual Studio 2015\Projects\HelloWPF\SharpGL.WPF\Apex.dll</HintPath>
+    </Reference>
+    <Reference Include="SharpGL">
+      <HintPath>..\..\Visual Studio 2015\Projects\HelloWPF\SharpGL.WPF\SharpGL.dll</HintPath>
+    </Reference>
+    <Reference Include="SharpGL.SceneGraph">
+      <HintPath>..\..\Visual Studio 2015\Projects\HelloWPF\SharpGL.WPF\SharpGL.SceneGraph.dll</HintPath>
+    </Reference>
+    <Reference Include="SharpGL.WPF">
+      <HintPath>..\..\Visual Studio 2015\Projects\HelloWPF\SharpGL.WPF\SharpGL.WPF.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
@@ -95,6 +107,7 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
