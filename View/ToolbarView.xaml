@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="ShaderBaker.View.ShaderTextView"
+﻿<UserControl x:Class="ShaderBaker.View.ToolbarView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
@@ -6,7 +6,8 @@
              xmlns:local="clr-namespace:ShaderBaker.View"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300">
-    <DockPanel HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
-        <TextBox Grid.Column="0" AcceptsReturn="True" TextWrapping="Wrap" FontFamily="Courier New" Background="#FF222222" Foreground="#FFFAEBD7" FontSize="14" Text="{Binding Text, UpdateSourceTrigger=PropertyChanged}"/>
-    </DockPanel>
+    <ToolBar>
+        <Button Content="New"/>
+        <Button Content="Open"/>
+    </ToolBar>
 </UserControl>

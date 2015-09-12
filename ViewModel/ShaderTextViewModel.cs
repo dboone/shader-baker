@@ -1,4 +1,5 @@
 ﻿using ShaderBaker.DataAccess;
+using System.ComponentModel;
 
 namespace ShaderBaker.ViewModel
 {
@@ -8,17 +9,16 @@ namespace ShaderBaker.ViewModel
         public string Text
         {
             get { return _text; }
-            set { _text = value; NotifyPropertyChanged("Text"); }
+            set
+            {
+                _text = value;
+                OnPropertyChanged("Text");
+            }
         }
 
         public ShaderTextViewModel(ShaderResource resource)
         {
             _text = resource.GetText();
-        }
-
-        private void NotifyPropertyChanged(string propertyName)
-        {
-            // Not sure about this part yet...
         }
     }
 }

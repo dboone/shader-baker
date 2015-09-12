@@ -35,17 +35,17 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Apex">
-      <HintPath>..\..\Visual Studio 2015\Projects\HelloWPF\SharpGL.WPF\Apex.dll</HintPath>
+    <Reference Include="SharpGL, Version=2.4.0.0, Culture=neutral, PublicKeyToken=27fc851303210b27, processorArchitecture=MSIL">
+      <HintPath>packages\SharpGL.2.4.0.0\lib\net40\SharpGL.dll</HintPath>
+      <Private>True</Private>
     </Reference>
-    <Reference Include="SharpGL">
-      <HintPath>..\..\Visual Studio 2015\Projects\HelloWPF\SharpGL.WPF\SharpGL.dll</HintPath>
+    <Reference Include="SharpGL.SceneGraph, Version=2.4.0.0, Culture=neutral, PublicKeyToken=27fc851303210b27, processorArchitecture=MSIL">
+      <HintPath>packages\SharpGL.2.4.0.0\lib\net40\SharpGL.SceneGraph.dll</HintPath>
+      <Private>True</Private>
     </Reference>
-    <Reference Include="SharpGL.SceneGraph">
-      <HintPath>..\..\Visual Studio 2015\Projects\HelloWPF\SharpGL.WPF\SharpGL.SceneGraph.dll</HintPath>
-    </Reference>
-    <Reference Include="SharpGL.WPF">
-      <HintPath>..\..\Visual Studio 2015\Projects\HelloWPF\SharpGL.WPF\SharpGL.WPF.dll</HintPath>
+    <Reference Include="SharpGL.WPF, Version=2.4.0.0, Culture=neutral, PublicKeyToken=27fc851303210b27, processorArchitecture=MSIL">
+      <HintPath>packages\SharpGL.WPF.2.4.0.0\lib\net40\SharpGL.WPF.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
@@ -71,12 +71,16 @@
     <Compile Include="ViewModel\MainWindowViewModel.cs" />
     <Compile Include="ViewModel\ShaderRenderViewModel.cs" />
     <Compile Include="ViewModel\ShaderTextViewModel.cs" />
+    <Compile Include="ViewModel\ToolbarViewModel.cs" />
     <Compile Include="ViewModel\ViewModelBase.cs" />
     <Compile Include="View\ShaderRenderView.xaml.cs">
       <DependentUpon>ShaderRenderView.xaml</DependentUpon>
     </Compile>
     <Compile Include="View\ShaderTextView.xaml.cs">
       <DependentUpon>ShaderTextView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="View\ToolbarView.xaml.cs">
+      <DependentUpon>ToolbarView.xaml</DependentUpon>
     </Compile>
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
@@ -95,6 +99,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="View\ShaderTextView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\ToolbarView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -118,6 +126,7 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+    <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>

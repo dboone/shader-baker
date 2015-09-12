@@ -8,6 +8,11 @@
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300">
     <Grid>
-        <sharpGL:OpenGLControl OpenGLDraw="OpenGLControl_OpenGLDraw"/>
+        <sharpGL:OpenGLControl
+            Name="GlViewPort"
+            RenderContextType="FBO"
+            OpenGLVersion="OpenGL3_3"
+            OpenGLInitialized="GlViewPort_OpenGLInitialized"
+            OpenGLDraw="OpenGLControl_OpenGLDraw"/>
     </Grid>
 </UserControl>

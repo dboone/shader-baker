@@ -4,20 +4,20 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ShaderBaker"
-        xmlns:sharpGL="clr-namespace:SharpGL.WPF;assembly=SharpGL.WPF"
         xmlns:vm="clr-namespace:ShaderBaker.ViewModel"
         xmlns:vw="clr-namespace:ShaderBaker.View"
         mc:Ignorable="d"
         Title="Shader Baker" Height="350" Width="750">
     <Window.Resources>
         <DataTemplate DataType="{x:TypeExtension vm:ShaderTextViewModel}">
-            <vw:ShaderTextView />
+            <vw:ShaderTextView/>
         </DataTemplate>
         <DataTemplate DataType="{x:TypeExtension vm:ShaderRenderViewModel}">
-            <vw:ShaderRenderView />
+            <vw:ShaderRenderView/>
         </DataTemplate>
     </Window.Resources>
-    <UniformGrid>
+    <DockPanel>
+        <vw:ToolbarView DockPanel.Dock="Top"/>
         <ItemsControl ItemsSource="{Binding ViewModels}">
             <ItemsControl.ItemsPanel>
                 <ItemsPanelTemplate>
@@ -25,5 +25,5 @@
                 </ItemsPanelTemplate>
             </ItemsControl.ItemsPanel>
         </ItemsControl>
-    </UniformGrid>
+    </DockPanel>
 </Window>
