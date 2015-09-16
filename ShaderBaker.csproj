@@ -68,6 +68,12 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="DataAccess\ShaderResource.cs" />
+    <Compile Include="GlRenderer\NullShaderInputs.cs" />
+    <Compile Include="GlRenderer\ShaderCompiler.cs" />
+    <Compile Include="GlUtilities\Error.cs" />
+    <Compile Include="GlUtilities\Shader.cs" />
+    <Compile Include="GlUtilities\Program.cs" />
+    <Compile Include="Utilities\Option.cs" />
     <Compile Include="ViewModel\MainWindowViewModel.cs" />
     <Compile Include="ViewModel\ShaderRenderViewModel.cs" />
     <Compile Include="ViewModel\ShaderTextViewModel.cs" />
