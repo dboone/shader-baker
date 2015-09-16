@@ -7,13 +7,40 @@ namespace GlRenderer.ShaderBaker
 
 public class ShaderCompiler
 {
+// putting volatile on the fields in this class doesn't
+// make it 100% thread safe, but it is better than nothing
+
+    private volatile string _vertexShaderSource;
+    public string VertexShaderSource
+    {
+        get { return _vertexShaderSource; }
+        set
+        {
+            _vertexShaderSource = value;
+            updateVertexShader = true;
+        }
+    }
+
+    private volatile bool updateVertexShader;
+    
+    private volatile string _fragmentShaderSource;
+    public string FragmentShaderSource
+    {
+        get { return _fragmentShaderSource; }
+        set
+        {
+            _fragmentShaderSource = value;
+            updateFragmentShader = true;
+        }
+    }
+
+    private volatile bool updateFragmentShader;
+
     private uint renderProgramHandle;
     private uint compileProgramHandle;
 
     private uint vertexShaderHandle;
     private uint fragmentShaderHandle;
-
-    private bool renderProgramStale;
 
     public ShaderCompiler(OpenGL gl)
     {
@@ -28,28 +55,41 @@ public class ShaderCompiler
 
         gl.AttachShader(renderProgramHandle, vertexShaderHandle);
         gl.AttachShader(renderProgramHandle, fragmentShaderHandle);
-    }
-    
-    public Option<string> RecompileVertexShader(OpenGL gl, string shaderSource)
-    {
-        return recompileShader(gl, vertexShaderHandle, shaderSource);
+
+        VertexShaderSource = 
+              "#version 330\n"
+            + "\n"
+            + "void main()\n"
+            + "{\n"
+            + "    gl_Position = vec4(0.0, 0.0, 0.0, 1.0);\n"
+            + "}\n";
+
+        FragmentShaderSource =
+             "#version 330\n"
+            + "\n"
+            + "out vec4 color;"
+            + "\n"
+            + "void main()\n"
+            + "{\n"
+            + "    color = vec4(1.0, 1.0, 1.0, 1.0);\n"
+            + "}\n";
     }
 
-    public Option<string> RecompileFragmentShader(OpenGL gl, string shaderSource)
+    private Option<string> recompileVertexShader(OpenGL gl)
     {
-        return recompileShader(gl, fragmentShaderHandle, shaderSource);
+        return recompileShader(gl, vertexShaderHandle, _vertexShaderSource);
+    }
+
+    private Option<string> recompileFragmentShader(OpenGL gl)
+    {
+        return recompileShader(gl, fragmentShaderHandle, _fragmentShaderSource);
     }
 
     private Option<string> recompileShader(OpenGL gl, uint shaderHandle, string shaderSource)
     {
         gl.ShaderSource(shaderHandle, shaderSource);
         gl.CompileShader(shaderHandle);
-        Option<string> compileStatus = Shader.GetShaderInfoLog(gl, shaderHandle);
-        if (!compileStatus.hasValue())
-        {
-            renderProgramStale = true;
-        }
-        return compileStatus;
+        return Shader.GetShaderInfoLog(gl, shaderHandle);
     }
 
     private Option<string> relinkProgram(OpenGL gl, uint programHandle)
@@ -80,7 +120,30 @@ public class ShaderCompiler
 
     public Option<string> RelinkProgramIfStale(OpenGL gl)
     {
-        if (renderProgramStale)
+        bool updateProgram = false;
+        if (updateVertexShader)
+        {
+            updateVertexShader = false;
+            Option<string> compileStatus = recompileVertexShader(gl);
+            if (compileStatus.hasValue())
+            {
+                return compileStatus;
+            }
+            updateProgram  = true;
+        }
+
+        if (updateFragmentShader)
+        {
+            updateFragmentShader = false;
+            Option<string> compileStatus = recompileFragmentShader(gl);
+            if (compileStatus.hasValue())
+            {
+                return compileStatus;
+            }
+            updateProgram  = true;
+        }
+
+        if (updateProgram)
         {
             Option<string> linkStatus = relinkProgram(gl, compileProgramHandle);
             
@@ -89,7 +152,6 @@ public class ShaderCompiler
                 swapRenderProgram();
             }
 
-            renderProgramStale = false;
             return linkStatus;
         } else
         {

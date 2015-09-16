@@ -36,33 +36,9 @@ namespace ShaderBaker.View
             + "        vec2(0.5, 0.5));\n"
             + "    gl_Position = vec4(vertices[gl_VertexID], 0.0, 1.0);\n"
             + "}\n";
-
-        private volatile bool recompileVertexShader;
-
-        private volatile string vertexShaderSource;
-        public string VertexShaderSource
-        {
-            get { return vertexShaderSource; }
-            set
-            {
-                vertexShaderSource = value;
-                recompileVertexShader = true;
-            }
-        }
-
-        private volatile bool recompileFragmentShader;
         
-        private volatile string fragmentShaderSource;
-        public string FragmentShaderSource
-        {
-            get { return fragmentShaderSource; }
-            set
-            {
-                fragmentShaderSource = value;
-                recompileFragmentShader = true;
-            }
-        }
-        
+        private readonly DispatcherTimer updateVsTimer;
+
         private ShaderCompiler shaderCompiler;
         private NullShaderInputs programInputs;
 
@@ -70,32 +46,19 @@ namespace ShaderBaker.View
         {
             InitializeComponent();
             
-            VertexShaderSource = VERTEX_SHADER_1_SOURCE;
-
-            FragmentShaderSource =
-                 "#version 330\n"
-                + "\n"
-                + "out vec4 color;"
-                + "\n"
-                + "void main()\n"
-                + "{\n"
-                + "    color = vec4(0.4, 0.7, 1.0, 1.0);\n"
-                + "}\n";
-
-            DispatcherTimer updateVsTimer = new DispatcherTimer();
+            updateVsTimer = new DispatcherTimer();
             updateVsTimer.Interval = TimeSpan.FromSeconds(0.5);
             updateVsTimer.Tick += updateVs;
-            updateVsTimer.Start();
         }
 
         private void updateVs(object sender, EventArgs e)
         {
-            if (VertexShaderSource == VERTEX_SHADER_1_SOURCE)
+            if (shaderCompiler.VertexShaderSource == VERTEX_SHADER_1_SOURCE)
             {
-                VertexShaderSource = VERTEX_SHADER_2_SOURCE;
+                shaderCompiler.VertexShaderSource = VERTEX_SHADER_2_SOURCE;
             } else
             {
-                VertexShaderSource = VERTEX_SHADER_1_SOURCE;
+                shaderCompiler.VertexShaderSource = VERTEX_SHADER_1_SOURCE;
             }
         }
 
@@ -107,29 +70,24 @@ namespace ShaderBaker.View
             
             shaderCompiler = new ShaderCompiler(gl);
             programInputs = new NullShaderInputs(gl);
+            updateVsTimer.Start();
+
+            shaderCompiler.VertexShaderSource = VERTEX_SHADER_1_SOURCE;
+
+            shaderCompiler.FragmentShaderSource =
+                 "#version 330\n"
+                + "\n"
+                + "out vec4 color;"
+                + "\n"
+                + "void main()\n"
+                + "{\n"
+                + "    color = vec4(0.4, 0.7, 1.0, 1.0);\n"
+                + "}\n";
         }
 
         private void OpenGLControl_OpenGLDraw(object sender, SharpGL.SceneGraph.OpenGLEventArgs args)
         {
             OpenGL gl = args.OpenGL;
-            
-            if (recompileVertexShader)
-            {
-                Option<string> compileStatus = shaderCompiler.RecompileVertexShader(gl, vertexShaderSource);
-                if (compileStatus.hasValue())
-                {
-                    Console.WriteLine(compileStatus.get());
-                }
-            }
-
-            if (recompileFragmentShader)
-            {
-                Option<string> compileStatus = shaderCompiler.RecompileFragmentShader(gl, fragmentShaderSource);
-                if (compileStatus.hasValue())
-                {
-                    Console.WriteLine(compileStatus.get());
-                }
-            }
             
             Option<string> linkStatus = shaderCompiler.RelinkProgramIfStale(gl);
             if (linkStatus.hasValue())
