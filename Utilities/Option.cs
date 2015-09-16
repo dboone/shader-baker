@@ -3,7 +3,7 @@
 namespace ShaderBaker.Utilities
 {
 
-public class Option<T> where T : class
+public struct Option<T> where T : class
 {
     public static Option<T> empty()
     {
