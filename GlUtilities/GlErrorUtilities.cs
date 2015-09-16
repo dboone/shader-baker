@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace ShaderBaker.GlUtilities
 {
 
-public static class Error
+public static class GlErrorUtilities
 {
     public static void ClearGlErrors(OpenGL gl)
     {

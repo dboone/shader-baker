@@ -6,7 +6,7 @@ using System.Text;
 namespace ShaderBaker.GlUtilities
 {
 
-public static class Shader
+public static class ShaderUtilities
 {
     public static Option<string> GetShaderInfoLog(OpenGL gl, uint shaderHandle)
     {   

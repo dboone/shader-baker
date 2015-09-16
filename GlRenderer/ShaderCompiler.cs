@@ -89,20 +89,20 @@ public class ShaderCompiler
     {
         gl.ShaderSource(shaderHandle, shaderSource);
         gl.CompileShader(shaderHandle);
-        return Shader.GetShaderInfoLog(gl, shaderHandle);
+        return ShaderUtilities.GetShaderInfoLog(gl, shaderHandle);
     }
 
     private Option<string> relinkProgram(OpenGL gl, uint programHandle)
     {
         gl.LinkProgram(programHandle);
 
-        Option<string> linkStatus = Program.GetLinkStatus(gl, programHandle);
+        Option<string> linkStatus = ProgramUtilities.GetLinkStatus(gl, programHandle);
         if (linkStatus.hasValue())
         {
             return linkStatus;
         }
 
-        Option<string> validateStatus = Program.Validate(gl, programHandle);
+        Option<string> validateStatus = ProgramUtilities.Validate(gl, programHandle);
         if (validateStatus.hasValue())
         {
             return validateStatus;

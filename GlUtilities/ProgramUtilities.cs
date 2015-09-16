@@ -6,7 +6,7 @@ using System.Text;
 namespace ShaderBaker.GlUtilities
 {
 
-public static class Program
+public static class ProgramUtilities
 {
     public static Option<string> GetLinkStatus(OpenGL gl, uint programHandle)
     {
