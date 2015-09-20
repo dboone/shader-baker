@@ -71,7 +71,6 @@ namespace ShaderBaker.GlRenderer
             {
                 glTaskQueue.ExecuteTasks(gl);
                 render(gl);
-                Thread.Sleep(500);
             }
         }
 
