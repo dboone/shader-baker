@@ -81,12 +81,7 @@ namespace ShaderBaker.GlRenderer
             var provider = gl.RenderContextProvider as FBORenderContextProvider;
             Debug.Assert(provider != null, "Render context provider is not an FBO renderer");
 
-
-
-// according to our research, this call does absolutely nothing
-//            gl.Blit(IntPtr.Zero);
-
-
+            gl.Blit(IntPtr.Zero);
 
             var hBitmap = provider.InternalDIBSection.HBitmap;
 
