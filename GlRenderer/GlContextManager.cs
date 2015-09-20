@@ -87,7 +87,7 @@ namespace ShaderBaker.GlRenderer
 
             if (hBitmap != IntPtr.Zero)
             {
-                var bitmap = GetFormatedBitmapSource(hBitmap);
+                var bitmap = GetFormattedBitmapSource(hBitmap);
                 bitmap.Freeze();
                 RenderComplete(bitmap);
             }
@@ -99,7 +99,7 @@ namespace ShaderBaker.GlRenderer
         /// </summary>
         /// <param name="hBitmap">The handle of the bitmap from the OpenGL render context.</param>
         /// <returns>Returns the new format converted bitmap.</returns>
-        private static FormatConvertedBitmap GetFormatedBitmapSource(IntPtr hBitmap)
+        private static FormatConvertedBitmap GetFormattedBitmapSource(IntPtr hBitmap)
         {
             //TODO: We have to remove the alpha channel - for some reason it
             // comes out as 0.0  meaning the drawing comes out transparent.
