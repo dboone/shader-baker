@@ -1,4 +1,5 @@
 ﻿using ShaderBaker.DataAccess;
+using ShaderBaker.GlRenderer;
 using System.Collections.ObjectModel;
 
 namespace ShaderBaker.ViewModel
@@ -9,11 +10,11 @@ namespace ShaderBaker.ViewModel
 
         public MainWindowViewModel()
         {
-            ShaderResource resource = new ShaderResource();
-            ShaderTextViewModel textViewModel = new ShaderTextViewModel(resource);
-            ShaderRenderViewModel renderViewModel = new ShaderRenderViewModel();
+            var textViewModel = new ShaderTextViewModel(new ShaderResource());
+            var programViewModel = new ProgramRendererViewModel();
+            
             ViewModels.Add(textViewModel);
-            ViewModels.Add(renderViewModel);
+            ViewModels.Add(programViewModel);
         }
 
         public ObservableCollection<ViewModelBase> ViewModels

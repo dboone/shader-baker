@@ -12,8 +12,8 @@
         <DataTemplate DataType="{x:TypeExtension vm:ShaderTextViewModel}">
             <vw:ShaderTextView/>
         </DataTemplate>
-        <DataTemplate DataType="{x:TypeExtension vm:ShaderRenderViewModel}">
-            <vw:ShaderRenderView/>
+        <DataTemplate DataType="{x:TypeExtension vm:ProgramRendererViewModel}">
+            <vw:ProgramRendererView/>
         </DataTemplate>
     </Window.Resources>
     <DockPanel>
