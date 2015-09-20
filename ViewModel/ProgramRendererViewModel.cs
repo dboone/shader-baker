@@ -54,8 +54,11 @@ namespace ShaderBaker.ViewModel
             }
         }
 
+        private readonly Dispatcher uiDispatcher;
+
         public ProgramRendererViewModel()
         {
+            uiDispatcher = Application.Current.Dispatcher;
             glContextManager = new GlContextManager();
             glContextManager.RenderComplete += onRenderComplete;
             glContextManager.Render += onRender;
@@ -162,7 +165,7 @@ namespace ShaderBaker.ViewModel
 
         private void onRenderComplete(ImageSource image)
         {
-            Application.Current.Dispatcher.BeginInvoke(
+            uiDispatcher.BeginInvoke(
                 (Action) (() =>
                 {
                     RenderedImage = image;
