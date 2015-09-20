@@ -51,7 +51,6 @@ namespace ShaderBaker.GlRenderer
 
         public void Start()
         {
-            var cancelTokenSource = new CancellationTokenSource();
             glThread.Start(new Tuple<CancellationToken>(cancelTokenSource.Token));
         }
 
