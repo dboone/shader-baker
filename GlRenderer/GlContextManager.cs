@@ -87,7 +87,9 @@ namespace ShaderBaker.GlRenderer
 
             if (hBitmap != IntPtr.Zero)
             {
-                RenderComplete(GetFormatedBitmapSource(hBitmap));
+                var bitmap = GetFormatedBitmapSource(hBitmap);
+                bitmap.Freeze();
+                RenderComplete(bitmap);
             }
         }
 
