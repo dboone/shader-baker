@@ -1,6 +1,9 @@
 ﻿<UserControl x:Class="ShaderBaker.View.ProgramRendererView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:local="clr-namespace:ShaderBaker.View">
-    <Image x:Name="renderImage"/>
+             xmlns:vm="clr-namespace:ShaderBaker.ViewModel">
+    <UserControl.DataContext>
+        <vm:ProgramRendererViewModel/>
+    </UserControl.DataContext>
+    <Image Source="{Binding RenderedImage}" SizeChanged="OnSizeChanged" Stretch="Fill"/>
 </UserControl>
