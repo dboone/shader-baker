@@ -101,7 +101,11 @@ namespace ShaderBaker.View
             shaderCompiler.ProgramLinked += onProgramLinked;
             programInputs = new NullShaderInputs(gl);
 
-            DispatcherTimer updateVsTimer = new DispatcherTimer();
+
+            DispatcherTimer updateVsTimer = new DispatcherTimer(
+                DispatcherPriority.Normal,
+                Application.Current.Dispatcher);
+
             updateVsTimer.Interval = TimeSpan.FromSeconds(0.5);
             updateVsTimer.Tick += updateVs;
             updateVsTimer.Start();
