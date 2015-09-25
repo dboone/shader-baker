@@ -1,5 +1,6 @@
 ﻿using GlRenderer.ShaderBaker;
 using ShaderBaker.GlRenderer;
+using ShaderBaker.GlRenderer.Task;
 using ShaderBaker.Utilities;
 using SharpGL;
 using System;
@@ -37,8 +38,7 @@ namespace ShaderBaker.View
             + "    gl_Position = vec4(vertices[gl_VertexID], 0.0, 1.0);\n"
             + "}\n";
         
-        private readonly DispatcherTimer updateVsTimer;
-
+        private readonly GlTaskQueue glTaskQueue;
         private ShaderCompiler shaderCompiler;
         private NullShaderInputs programInputs;
 
@@ -46,9 +46,7 @@ namespace ShaderBaker.View
         {
             InitializeComponent();
             
-            updateVsTimer = new DispatcherTimer();
-            updateVsTimer.Interval = TimeSpan.FromSeconds(0.5);
-            updateVsTimer.Tick += updateVs;
+            glTaskQueue = new GlTaskQueue();
         }
 
         private void updateVs(object sender, EventArgs e)
@@ -68,8 +66,14 @@ namespace ShaderBaker.View
             gl.Disable(OpenGL.GL_DEPTH_TEST);
             gl.ClearColor(0.2f, 0.2f, 0.2f, 1.0f);
             
-            shaderCompiler = new ShaderCompiler(gl);
+            shaderCompiler = new ShaderCompiler(gl, glTaskQueue);
+            shaderCompiler.ShaderCompiled += onShaderCompiled;
+            shaderCompiler.ProgramLinked += onProgramLinked;
             programInputs = new NullShaderInputs(gl);
+
+            DispatcherTimer updateVsTimer = new DispatcherTimer();
+            updateVsTimer.Interval = TimeSpan.FromSeconds(0.5);
+            updateVsTimer.Tick += updateVs;
             updateVsTimer.Start();
 
             shaderCompiler.VertexShaderSource = VERTEX_SHADER_1_SOURCE;
@@ -85,15 +89,27 @@ namespace ShaderBaker.View
                 + "}\n";
         }
 
+        private void onShaderCompiled(ShaderCompiler sender, uint shaderHandle, Option<string> compileStatus)
+        {
+            if (compileStatus.hasValue())
+            {
+                Console.WriteLine("Shader failed to compile:\n" + compileStatus.get());
+            }
+        }
+
+        private void onProgramLinked(ShaderCompiler sender, Option<string> linkStatus)
+        {
+            if (linkStatus.hasValue())
+            {
+                Console.WriteLine("Program failed to link:\n" + linkStatus.get());
+            }
+        }
+
         private void OpenGLControl_OpenGLDraw(object sender, SharpGL.SceneGraph.OpenGLEventArgs args)
         {
             OpenGL gl = args.OpenGL;
             
-            Option<string> linkStatus = shaderCompiler.RelinkProgramIfStale(gl);
-            if (linkStatus.hasValue())
-            {
-                Console.WriteLine(linkStatus.get());
-            }
+            glTaskQueue.ExecuteTasks(gl);
 
             gl.Clear(OpenGL.GL_COLOR_BUFFER_BIT);
 

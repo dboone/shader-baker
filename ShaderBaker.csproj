@@ -68,8 +68,11 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="DataAccess\ShaderResource.cs" />
+    <Compile Include="GlRenderer\Task\GlTaskQueue.cs" />
     <Compile Include="GlRenderer\NullShaderInputs.cs" />
     <Compile Include="GlRenderer\ShaderCompiler.cs" />
+    <Compile Include="GlRenderer\Task\IGlTask.cs" />
+    <Compile Include="GlRenderer\Task\SingletonGlTask.cs" />
     <Compile Include="GlUtilities\GlErrorUtilities.cs" />
     <Compile Include="GlUtilities\ShaderUtilities.cs" />
     <Compile Include="GlUtilities\ProgramUtilities.cs" />
