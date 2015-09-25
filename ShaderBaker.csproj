@@ -68,16 +68,24 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="DataAccess\ShaderResource.cs" />
+    <Compile Include="GlRenderer\Program.cs" />
+    <Compile Include="GlRenderer\ProgramStage.cs" />
+    <Compile Include="GlRenderer\Shader.cs" />
     <Compile Include="GlRenderer\Task\GlTaskQueue.cs" />
     <Compile Include="GlRenderer\NullShaderInputs.cs" />
     <Compile Include="GlRenderer\ShaderCompiler.cs" />
     <Compile Include="GlRenderer\Task\IGlTask.cs" />
     <Compile Include="GlRenderer\Task\SingletonGlTask.cs" />
+    <Compile Include="GlRenderer\Validity.cs" />
     <Compile Include="GlUtilities\GlErrorUtilities.cs" />
     <Compile Include="GlUtilities\ShaderUtilities.cs" />
     <Compile Include="GlUtilities\ProgramUtilities.cs" />
     <Compile Include="Utilities\Option.cs" />
     <Compile Include="ViewModel\MainWindowViewModel.cs" />
+    <Compile Include="ViewModel\ProgramRepositoryViewModel.cs" />
+    <Compile Include="ViewModel\ProgramViewModel.cs" />
+    <Compile Include="ViewModel\ShaderRepositoryViewModel.cs" />
+    <Compile Include="ViewModel\ShaderViewModel.cs" />
     <Compile Include="ViewModel\ShaderRenderViewModel.cs" />
     <Compile Include="ViewModel\ShaderTextViewModel.cs" />
     <Compile Include="ViewModel\ToolbarViewModel.cs" />
