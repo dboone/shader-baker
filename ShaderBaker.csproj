@@ -78,7 +78,6 @@
     <Compile Include="GlUtilities\ShaderUtilities.cs" />
     <Compile Include="GlUtilities\ProgramUtilities.cs" />
     <Compile Include="Utilities\Option.cs" />
-    <Compile Include="ViewModel\MainWindowViewModel.cs" />
     <Compile Include="ViewModel\ProgramRendererViewModel.cs" />
     <Compile Include="ViewModel\ShaderTextViewModel.cs" />
     <Compile Include="ViewModel\ToolbarViewModel.cs" />

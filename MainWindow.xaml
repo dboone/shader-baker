@@ -8,22 +8,24 @@
         xmlns:vw="clr-namespace:ShaderBaker.View"
         mc:Ignorable="d"
         Title="Shader Baker" Height="350" Width="750">
-    <Window.Resources>
-        <DataTemplate DataType="{x:TypeExtension vm:ShaderTextViewModel}">
-            <vw:ShaderTextView/>
-        </DataTemplate>
-        <DataTemplate DataType="{x:TypeExtension vm:ProgramRendererViewModel}">
-            <vw:ProgramRendererView/>
-        </DataTemplate>
-    </Window.Resources>
+    <Window.DataContext>
+        <vm:ProgramRendererViewModel/>
+    </Window.DataContext>
     <DockPanel>
         <vw:ToolbarView DockPanel.Dock="Top"/>
-        <ItemsControl ItemsSource="{Binding ViewModels}">
-            <ItemsControl.ItemsPanel>
-                <ItemsPanelTemplate>
-                    <UniformGrid Rows="1"/>
-                </ItemsPanelTemplate>
-            </ItemsControl.ItemsPanel>
-        </ItemsControl>
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+                <!--<ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>-->
+            </Grid.ColumnDefinitions>
+            <vw:ShaderTextView Grid.Column="0"/>
+            <GridSplitter Grid.Column="1" Width="5"  VerticalAlignment="Stretch" ResizeBehavior="PreviousAndNext"/>
+            <vw:ProgramRendererView Grid.Column="2"/>
+            <!--<GridSplitter Grid.Column="3"/>
+            <vw:ShaderTextView Grid.Column="4"/>-->
+        </Grid>
     </DockPanel>
 </Window>

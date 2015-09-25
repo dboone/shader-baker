@@ -13,7 +13,7 @@ namespace ShaderBaker.ViewModel
 {
     class ProgramRendererViewModel : ViewModelBase
     {
-        private readonly string VERTEX_SHADER_1_SOURCE =
+        private string vertexShaderSource =
               "#version 330\n"
             + "\n"
             + "void main()\n"
@@ -25,17 +25,16 @@ namespace ShaderBaker.ViewModel
             + "    gl_Position = vec4(vertices[gl_VertexID], 0.0, 1.0);\n"
             + "}\n";
 
-        private readonly string VERTEX_SHADER_2_SOURCE =
-              "#version 330\n"
-            + "\n"
-            + "void main()\n"
-            + "{\n"
-            + "    vec2 vertices[3] = vec2[3](\n"
-            + "        vec2(-0.5, 0.5),\n"
-            + "        vec2(0.0, -0.5),\n"
-            + "        vec2(0.5, 0.5));\n"
-            + "    gl_Position = vec4(vertices[gl_VertexID], 0.0, 1.0);\n"
-            + "}\n";
+        public string VertexShaderSource
+        {
+            get { return vertexShaderSource; }
+            set
+            {
+                vertexShaderSource = value;
+                shaderCompiler.VertexShaderSource = vertexShaderSource;
+                OnPropertyChanged("VertexShaderSource");
+            }
+        }
 
         private ShaderCompiler shaderCompiler;
         private NullShaderInputs programInputs;
@@ -85,18 +84,6 @@ namespace ShaderBaker.ViewModel
             }
         }
 
-        private void updateVs(object sender, EventArgs e)
-        {
-            if (shaderCompiler.VertexShaderSource == VERTEX_SHADER_1_SOURCE)
-            {
-                shaderCompiler.VertexShaderSource = VERTEX_SHADER_2_SOURCE;
-            }
-            else
-            {
-                shaderCompiler.VertexShaderSource = VERTEX_SHADER_1_SOURCE;
-            }
-        }
-
         private void initialize(OpenGL gl)
         {
             gl.Disable(OpenGL.GL_DEPTH_TEST);
@@ -107,17 +94,7 @@ namespace ShaderBaker.ViewModel
             shaderCompiler.ProgramLinked += onProgramLinked;
             programInputs = new NullShaderInputs(gl);
 
-
-            DispatcherTimer updateVsTimer = new DispatcherTimer(
-                DispatcherPriority.Normal,
-                Application.Current.Dispatcher);
-
-            updateVsTimer.Interval = TimeSpan.FromSeconds(0.5);
-            updateVsTimer.Tick += updateVs;
-            updateVsTimer.Start();
-
-            shaderCompiler.VertexShaderSource = VERTEX_SHADER_1_SOURCE;
-
+            shaderCompiler.VertexShaderSource = vertexShaderSource;
             shaderCompiler.FragmentShaderSource =
                  "#version 330\n"
                 + "\n"
