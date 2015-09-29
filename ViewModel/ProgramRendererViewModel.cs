@@ -36,6 +36,27 @@ namespace ShaderBaker.ViewModel
             }
         }
 
+        private string fragmentShaderSource =
+              "#version 330\n"
+            + "\n"
+            + "out vec4 color;"
+            + "\n"
+            + "void main()\n"
+            + "{\n"
+            + "    color = vec4(0.4, 0.7, 1.0, 1.0);\n"
+            + "}\n";
+
+        public string FragmentShaderSource
+        {
+            get { return fragmentShaderSource; }
+            set
+            {
+                fragmentShaderSource = value;
+                shaderCompiler.FragmentShaderSource = fragmentShaderSource;
+                OnPropertyChanged("FragmentShaderSource");
+            }
+        }
+
         private ShaderCompiler shaderCompiler;
         private NullShaderInputs programInputs;
 
@@ -95,15 +116,7 @@ namespace ShaderBaker.ViewModel
             programInputs = new NullShaderInputs(gl);
 
             shaderCompiler.VertexShaderSource = vertexShaderSource;
-            shaderCompiler.FragmentShaderSource =
-                 "#version 330\n"
-                + "\n"
-                + "out vec4 color;"
-                + "\n"
-                + "void main()\n"
-                + "{\n"
-                + "    color = vec4(0.4, 0.7, 1.0, 1.0);\n"
-                + "}\n";
+            shaderCompiler.FragmentShaderSource = fragmentShaderSource;
         }
 
         public void OnResize(Size newSize)

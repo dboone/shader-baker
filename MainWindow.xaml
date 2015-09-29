@@ -1,13 +1,10 @@
 ﻿<Window x:Class="ShaderBaker.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ShaderBaker"
         xmlns:vm="clr-namespace:ShaderBaker.ViewModel"
         xmlns:vw="clr-namespace:ShaderBaker.View"
-        mc:Ignorable="d"
-        Title="Shader Baker" Height="350" Width="750">
+        Title="Shader Baker" Height="350" Width="850">
     <Window.DataContext>
         <vm:ProgramRendererViewModel/>
     </Window.DataContext>
@@ -18,14 +15,22 @@
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="*"/>
-                <!--<ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="*"/>-->
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
-            <vw:ShaderTextView Grid.Column="0"/>
-            <GridSplitter Grid.Column="1" Width="5"  VerticalAlignment="Stretch" ResizeBehavior="PreviousAndNext"/>
+            <vw:ShaderTextView Grid.Column="0"
+                               TheEditableText="{Binding VertexShaderSource}"/>
+            <GridSplitter Grid.Column="1"
+                          Width="5"
+                          VerticalAlignment="Stretch"
+                          ResizeBehavior="PreviousAndNext"/>
             <vw:ProgramRendererView Grid.Column="2"/>
-            <!--<GridSplitter Grid.Column="3"/>
-            <vw:ShaderTextView Grid.Column="4"/>-->
+            <GridSplitter Grid.Column="3"
+                          Width="5"
+                          VerticalAlignment="Stretch"
+                          ResizeBehavior="PreviousAndNext"/>
+            <vw:ShaderTextView Grid.Column="4"
+                               TheEditableText="{Binding FragmentShaderSource}"/>
         </Grid>
     </DockPanel>
 </Window>
