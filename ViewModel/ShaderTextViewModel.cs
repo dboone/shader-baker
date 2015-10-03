@@ -1,5 +1,4 @@
 ﻿using ShaderBaker.DataAccess;
-using System.ComponentModel;
 
 namespace ShaderBaker.ViewModel
 {

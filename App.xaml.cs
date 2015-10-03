@@ -12,7 +12,7 @@ namespace ShaderBaker
         {
             base.OnStartup(e);
             MainWindow window = new MainWindow();
-            var viewModel = new MainWindowViewModel();
+            var viewModel = new ProgramRendererViewModel();
             window.DataContext = viewModel;
             window.Show();
         }

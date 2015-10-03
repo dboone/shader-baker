@@ -70,7 +70,11 @@ public sealed class SingletonGlTask
 
     // A private class is used to hide the IGlTask interface from outside this
     // class. This ensures that nobody but this class can submit it to the queue.
-    private struct Impl : IGlTask
+    //
+    // Making this a struct does not work. It looks like wrapped task is getting 
+    // set back to null every time Submit() is called, so tasks end up getting
+    // enqueued more than once. WTF?!?
+    private class Impl : IGlTask
     {
         private readonly GlTaskQueue taskQueue;
 
