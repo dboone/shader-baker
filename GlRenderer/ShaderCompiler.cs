@@ -1,4 +1,5 @@
-﻿using ShaderBaker.GlRenderer.Task;
+﻿using ShaderBaker.GlRenderer;
+using ShaderBaker.GlRenderer.Task;
 using ShaderBaker.GlUtilities;
 using ShaderBaker.Utilities;
 using SharpGL;
@@ -8,8 +9,7 @@ namespace GlRenderer.ShaderBaker
 
 public class ShaderCompiler
 {
-
-    private readonly GlTaskQueue glTaskQueue;
+    private readonly GlContextManager glContextManager;
     private readonly SingletonGlTask compileVertexShaderTask;
     private readonly SingletonGlTask compileFragmentShaderTask;
 
@@ -26,7 +26,9 @@ public class ShaderCompiler
         set
         {
             _vertexShaderSource = value;
-            compileVertexShaderTask.Submit(new CompileShaderTask(this, vertexShaderHandle, value));
+            compileVertexShaderTask.Submit(
+                new CompileVertexShaderTask(
+                    new CompileShaderHelper(this, vertexShaderHandle, value)));
         }
     }
     
@@ -37,21 +39,26 @@ public class ShaderCompiler
         set
         {
             _fragmentShaderSource = value;
-            compileFragmentShaderTask.Submit(new CompileShaderTask(this, fragmentShaderHandle, value));
+            compileFragmentShaderTask.Submit(
+                new CompileFragmentShaderTask(
+                    new CompileShaderHelper(this, fragmentShaderHandle, value)));
         }
     }
         
-    public delegate void ShaderCompiledEventHandler(ShaderCompiler sender, uint shaderHandle, Option<string> compileStatus);
-    public event ShaderCompiledEventHandler ShaderCompiled;
+    public delegate void VertexShaderCompiledEventHandler(ShaderCompiler sender, uint shaderHandle, Option<string> compileStatus);
+    public event VertexShaderCompiledEventHandler VertexShaderCompiled;
+
+    public delegate void FragmentShaderCompiledEventHandler(ShaderCompiler sender, uint shaderHandle, Option<string> compileStatus);
+    public event FragmentShaderCompiledEventHandler FragmentShaderCompiled;
 
     public delegate void ProgramLinkedEventHandler(ShaderCompiler sender, Option<string> linkStatus);
     public event ProgramLinkedEventHandler ProgramLinked;
 
-    public ShaderCompiler(OpenGL gl, GlTaskQueue glTaskQueue)
+    public ShaderCompiler(OpenGL gl, GlContextManager glContextManager)
     {
-        this.glTaskQueue = glTaskQueue;
-        this.compileVertexShaderTask = new SingletonGlTask(glTaskQueue);
-        this.compileFragmentShaderTask = new SingletonGlTask(glTaskQueue);
+        this.glContextManager = glContextManager;
+        this.compileVertexShaderTask = glContextManager.CreateSingletonGlTask();
+        this.compileFragmentShaderTask = glContextManager.CreateSingletonGlTask();
 
         compileProgramHandle = gl.CreateProgram();
         renderProgramHandle = gl.CreateProgram();
@@ -145,15 +152,15 @@ public class ShaderCompiler
         fragmentShaderHandle = 0;
     }
 
-    private class CompileShaderTask : IGlTask
+    private class CompileShaderHelper
     {
-        private readonly ShaderCompiler shaderCompiler;
+        public readonly ShaderCompiler shaderCompiler;
 
-        private readonly uint shaderHandle;
+        public readonly uint shaderHandle;
 
-        private readonly string shaderSource;
+        public readonly string shaderSource;
 
-        public CompileShaderTask(
+        public CompileShaderHelper(
             ShaderCompiler shaderCompiler, uint shaderHandle, string shaderSource)
         {
             this.shaderCompiler = shaderCompiler;
@@ -161,14 +168,52 @@ public class ShaderCompiler
             this.shaderSource = shaderSource;
         }
 
-        public void Execute(OpenGL gl)
+        public Option<string> Execute(OpenGL gl)
         {
-            Option<string> compileStatus = ShaderCompiler.recompileShader(gl, shaderHandle, shaderSource);
+            Option<string> compileStatus = recompileShader(gl, shaderHandle, shaderSource);
             if (!compileStatus.hasValue())
             {
-                shaderCompiler.glTaskQueue.SubmitTask(new LinkProgramTask(shaderCompiler));
+                shaderCompiler.glContextManager.SubmitGlTask(new LinkProgramTask(shaderCompiler));
             }
-            shaderCompiler.ShaderCompiled(shaderCompiler, shaderHandle, compileStatus);
+            return compileStatus;
+        }
+    }
+
+    private class CompileVertexShaderTask : IGlTask
+    {
+        private readonly CompileShaderHelper helper;
+
+        public CompileVertexShaderTask(CompileShaderHelper helper)
+        {
+            this.helper = helper;
+        }
+
+        public void Execute(OpenGL gl)
+        {
+            Option<string> compileStatus = helper.Execute(gl);
+            helper.shaderCompiler.VertexShaderCompiled(
+                helper.shaderCompiler,
+                helper.shaderHandle,
+                compileStatus);
+        }
+    }
+
+    private class CompileFragmentShaderTask : IGlTask
+    {
+        private readonly CompileShaderHelper helper;
+
+        public CompileFragmentShaderTask(CompileShaderHelper helper)
+        {
+            this.helper = helper;
+        }
+
+        public void Execute(OpenGL gl)
+        {
+            Option<string> compileStatus = helper.Execute(gl);
+            helper.shaderCompiler.FragmentShaderCompiled(
+                helper.shaderCompiler,
+                helper.shaderHandle,
+                compileStatus);
         }
     }
 
@@ -183,7 +228,7 @@ public class ShaderCompiler
 
         public void Execute(OpenGL gl)
         {
-            Option<string> linkStatus = ShaderCompiler.relinkProgram(gl, shaderCompiler.compileProgramHandle);
+            Option<string> linkStatus = relinkProgram(gl, shaderCompiler.compileProgramHandle);
             if (!linkStatus.hasValue())
             {
                 shaderCompiler.swapRenderProgram();
