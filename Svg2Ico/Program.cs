@@ -62,28 +62,14 @@ using System.IO;
 using System.Linq;
 using System.Xml;
 
-namespace SvgToIco
+namespace Svg2Ico
 {
-
-class ConverterInputs
-{
-    public readonly SvgDocument SvgDocument;
-    public readonly string OutputFileName;
-
-    public ConverterInputs(
-        SvgDocument svgDocument,
-        string outputFileName)
-    {
-        SvgDocument = svgDocument;
-        OutputFileName = outputFileName;
-    }
-}
 
 class Program
 {
     private const string ICO_EXTENSION = ".ico";
 
-    static void Main(string[] args)
+    private static void Main(string[] args)
     {
         Svg2IcoArguments parsedArgs;
         if (!Svg2IcoArguments.TryParse(args, out parsedArgs))
@@ -175,7 +161,7 @@ class Program
         } catch (UnauthorizedAccessException)
         {
             Console.WriteLine("Insufficient permission to access file: " + fileName);
-        } catch (XmlException ex)
+        } catch (XmlException)
         {
             Console.WriteLine("SVG file does not contain valid XML: " + fileName);
         } catch (Exception ex)
@@ -184,7 +170,7 @@ class Program
         }
     }
     
-    static Bitmap DrawBitmap(SvgDocument doc, int width, int height)
+    private static Bitmap DrawBitmap(SvgDocument doc, int width, int height)
     {
         doc.Width = width;
         doc.Height = height;
@@ -193,7 +179,7 @@ class Program
         return bmp;
     }
 
-    static void WriteToIcoFile(string fileName, IList<Bitmap> bitmaps)
+    private static void WriteToIcoFile(string fileName, IList<Bitmap> bitmaps)
     {
         using (var outputStream = new FileStream(fileName, FileMode.Create))
         {
@@ -201,7 +187,7 @@ class Program
         }
     }
 
-    static void WriteIcoToStream(Stream stream, IList<Bitmap> bitmaps)
+    private static void WriteIcoToStream(Stream stream, IList<Bitmap> bitmaps)
     {
         if (bitmaps.Any(bmp => bmp.Width> 256 || bmp.Height> 256))
         {
@@ -251,7 +237,7 @@ class Program
         }
     }
     
-    static void WriteIcoMainHeader(Stream stream, ushort numberImages)
+    private static void WriteIcoMainHeader(Stream stream, ushort numberImages)
     {
         var numberImagesLe = ToBytesLittleEndian(numberImages);
         byte[] header = {
@@ -261,7 +247,7 @@ class Program
         stream.Write(header, 0, header.Length);
     }
 
-    static void WriteIcoImageHeader(
+    private static void WriteIcoImageHeader(
         Stream stream,
         byte imageWidth,
         byte imageHeight,
@@ -282,7 +268,7 @@ class Program
         stream.Write(header, 0, header.Length);
     }
 
-    static byte[] ReverseIfBigEndian(byte[] bytes)
+    private static byte[] ReverseIfBigEndian(byte[] bytes)
     {
         if (!BitConverter.IsLittleEndian)
         {
@@ -291,12 +277,12 @@ class Program
         return bytes;
     }
 
-    static byte[] ToBytesLittleEndian(ushort value)
+    private static byte[] ToBytesLittleEndian(ushort value)
     {
         return ReverseIfBigEndian(BitConverter.GetBytes(value));
     }
 
-    static byte[] ToBytesLittleEndian(uint value)
+    private static byte[] ToBytesLittleEndian(uint value)
     {
         return ReverseIfBigEndian(BitConverter.GetBytes(value));
     }
@@ -359,6 +345,19 @@ Square powers of two: <n>..<m>
     Where `n` and `m` are numbers in the range[0, 8] and m >= n. Represents
     images at resolutions of 2 ^ n x 2 ^ n, 2 ^ (n + 1) x 2 ^ (n + 1),..., 2 ^ m x 2 ^ m");
 
+    }
+
+    private class ConverterInputs
+    {
+        public readonly SvgDocument SvgDocument;
+        public readonly string OutputFileName;
+
+        public ConverterInputs(
+            SvgDocument svgDocument, string outputFileName)
+        {
+            SvgDocument = svgDocument;
+            OutputFileName = outputFileName;
+        }
     }
 }
 

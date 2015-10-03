@@ -5,66 +5,8 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Text;
 
-namespace SvgToIco
+namespace Svg2Ico
 {
-
-struct IcoResolution
-{
-    public readonly int Width;
-
-    public byte IcoHeaderWidth
-    {
-        get
-        {
-            return (byte) Width;
-        }
-    }
-
-    public readonly int Height;
-
-    public byte IcoHeaderHeight
-    {
-        get
-        {
-            return (byte) Height;
-        }
-    }
-    
-    public IcoResolution(IcoSize size)
-    {
-        Width = size.Value;
-        Height = size.Value;
-    }
-    
-    public IcoResolution(IcoSize width, IcoSize height)
-    {
-        Width = width.Value;
-        Height = height.Value;
-    }
-}
-
-class IcoSize
-{
-    public readonly int Value;
-
-    public static bool TryGetInstance(int value, out IcoSize size)
-    {
-        if (value < 0 || value > 256)
-        {
-            size = null;
-            return false;
-        } else
-        {
-            size = new IcoSize(value);
-            return true;
-        }
-    }
-
-    private IcoSize(int value)
-    {
-        Value = value;
-    }
-}
 
 class Svg2IcoArguments
 {
@@ -185,128 +127,127 @@ class Svg2IcoArguments
         InputPaths = new ReadOnlyCollection<string>(
             new List<string>(inputPaths));
     }
-}
-
-static class SizeSpecParser
-{
-    private enum TokenType
+    
+    private static class SizeSpecParser
     {
-        EndOfInput,
-        Error,
-        DimensionSeparator,
-        Number,
-        RangeSeparator
-    }
-
-    public static bool TryParse(
-        string sizeStr, out IEnumerable<IcoResolution> resolutions)
-    {
-        LexerEnumerator lexerEnumerator = new LexerEnumerator(sizeStr);
-        var token1 = lexerEnumerator.NextToken();
-        var token2 = lexerEnumerator.NextToken();
-        var token3 = lexerEnumerator.NextToken();
-        if (token1.Item1 == TokenType.Number
-            && token2.Item1 == TokenType.EndOfInput
-            && token3.Item1 == TokenType.EndOfInput)
+        private enum TokenType
         {
-            int size;
-            IcoSize icoSize;
-            if (int.TryParse(token1.Item2, out size)
-                && IcoSize.TryGetInstance(size, out icoSize))
-            {
-                resolutions = new IcoResolution[] { new IcoResolution(icoSize) };
-                return true;
-            }
-        } else if (token1.Item1 == TokenType.Number
-            && token2.Item1 == TokenType.DimensionSeparator
-            && token3.Item1 == TokenType.Number)
-        {
-            int width;
-            int height;
-            IcoSize icoWidth;
-            IcoSize icoHeight;
-            if (int.TryParse(token1.Item2, out width)
-                && int.TryParse(token3.Item2, out height)
-                && IcoSize.TryGetInstance(width, out icoWidth)
-                && IcoSize.TryGetInstance(height, out icoHeight))
-            {
-                resolutions = new IcoResolution[] { new IcoResolution(icoWidth, icoHeight) };
-                return true;
-            }
-        } else if (token1.Item1 == TokenType.Number
-            && token2.Item1 == TokenType.RangeSeparator
-            && token3.Item1 == TokenType.Number)
-        {
-            uint start;
-            uint end;
-            if (uint.TryParse(token1.Item2, out start)
-                && uint.TryParse(token3.Item2, out end)
-                && start >= 0
-                && end <= 8
-                && end >= start)
-            {
-                int[] sizeLookupTable =
-                {
-                    1, 2, 4, 8, 16, 32, 64, 128, 256
-                };
-
-                var result = new List<IcoResolution>();
-                for (uint i = start; i <= end; ++i)
-                {
-                    IcoSize icoSize;
-                    // No need to do check the return value of GetInstance.
-                    // Values are guaranteed to be in the right range anyways.
-                    IcoSize.TryGetInstance(sizeLookupTable[i], out icoSize);
-                    Debug.Assert(icoSize != null, "Expected icoSize to be set");
-                    result.Add(new IcoResolution(icoSize));
-                }
-                resolutions = result;
-                return true;
-            }
-        }
-
-        resolutions = null;
-        return false;
-    }
-
-    private class LexerEnumerator
-    {
-        private enum State
-        {
-            Start,
-            NewToken,
+            EndOfInput,
+            Error,
+            DimensionSeparator,
             Number,
-            OneDot,
-            Error
+            RangeSeparator
         }
 
-        private readonly CharEnumerator inputEnumerator;
-
-        private State state;
-        
-        private readonly StringBuilder tokenBuilder = new StringBuilder();
-
-        private bool endOfInput;
-
-        public LexerEnumerator(string input)
+        public static bool TryParse(
+            string sizeStr, out IEnumerable<IcoResolution> resolutions)
         {
-            inputEnumerator = input.GetEnumerator();
-            state = State.Start;
-            tokenBuilder = new StringBuilder();
-            endOfInput = false;
-        }
-
-        private void moveNextCharacter()
-        {
-            endOfInput = !inputEnumerator.MoveNext();
-        }
-
-        public Tuple<TokenType, string> NextToken()
-        {
-            while (true)
+            Lexer lexerEnumerator = new Lexer(sizeStr);
+            var token1 = lexerEnumerator.NextToken();
+            var token2 = lexerEnumerator.NextToken();
+            var token3 = lexerEnumerator.NextToken();
+            if (token1.Item1 == TokenType.Number
+                && token2.Item1 == TokenType.EndOfInput
+                && token3.Item1 == TokenType.EndOfInput)
             {
-                switch (state)
+                int size;
+                IcoSize icoSize;
+                if (int.TryParse(token1.Item2, out size)
+                    && IcoSize.TryGetInstance(size, out icoSize))
                 {
+                    resolutions = new IcoResolution[] { new IcoResolution(icoSize) };
+                    return true;
+                }
+            } else if (token1.Item1 == TokenType.Number
+                && token2.Item1 == TokenType.DimensionSeparator
+                && token3.Item1 == TokenType.Number)
+            {
+                int width;
+                int height;
+                IcoSize icoWidth;
+                IcoSize icoHeight;
+                if (int.TryParse(token1.Item2, out width)
+                    && int.TryParse(token3.Item2, out height)
+                    && IcoSize.TryGetInstance(width, out icoWidth)
+                    && IcoSize.TryGetInstance(height, out icoHeight))
+                {
+                    resolutions = new IcoResolution[] { new IcoResolution(icoWidth, icoHeight) };
+                    return true;
+                }
+            } else if (token1.Item1 == TokenType.Number
+                && token2.Item1 == TokenType.RangeSeparator
+                && token3.Item1 == TokenType.Number)
+            {
+                uint start;
+                uint end;
+                if (uint.TryParse(token1.Item2, out start)
+                    && uint.TryParse(token3.Item2, out end)
+                    && start >= 0
+                    && end <= 8
+                    && end >= start)
+                {
+                    int[] sizeLookupTable =
+                    {
+                        1, 2, 4, 8, 16, 32, 64, 128, 256
+                    };
+
+                    var result = new List<IcoResolution>();
+                    for (uint i = start; i <= end; ++i)
+                    {
+                        IcoSize icoSize;
+                        // No need to do check the return value of GetInstance.
+                        // Values are guaranteed to be in the right range anyways.
+                        IcoSize.TryGetInstance(sizeLookupTable[i], out icoSize);
+                        Debug.Assert(icoSize != null, "Expected icoSize to be set");
+                        result.Add(new IcoResolution(icoSize));
+                    }
+                    resolutions = result;
+                    return true;
+                }
+            }
+
+            resolutions = null;
+            return false;
+        }
+
+        private class Lexer
+        {
+            private enum State
+            {
+                Start,
+                NewToken,
+                Number,
+                OneDot,
+                Error
+            }
+
+            private readonly CharEnumerator inputEnumerator;
+
+            private State state;
+        
+            private readonly StringBuilder tokenBuilder = new StringBuilder();
+
+            private bool endOfInput;
+
+            public Lexer(string input)
+            {
+                inputEnumerator = input.GetEnumerator();
+                state = State.Start;
+                tokenBuilder = new StringBuilder();
+                endOfInput = false;
+            }
+
+            private void moveNextCharacter()
+            {
+                endOfInput = !inputEnumerator.MoveNext();
+            }
+
+            public Tuple<TokenType, string> NextToken()
+            {
+                while (true)
+                {
+                    switch (state)
+                    {
                     case State.Start:
                         moveNextCharacter();
                         if (endOfInput)
@@ -364,6 +305,7 @@ static class SizeSpecParser
                         break;
                     case State.Error:
                         return Tuple.Create(TokenType.Error, "");
+                    }
                 }
             }
         }
