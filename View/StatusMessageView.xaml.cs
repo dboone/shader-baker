@@ -17,25 +17,26 @@ namespace ShaderBaker.View
 
         public Option<string> StatusMessage
         {
-            get { return (Option<string>)GetValue(TheStaticTextProperty); }
-            set { SetValue(TheStaticTextProperty, value); }
+            get { return (Option<string>) GetValue(StatusMessageProperty); }
+            set { SetValue(StatusMessageProperty, value); }
         }
 
-        public static readonly DependencyProperty TheStaticTextProperty =
+        private static readonly DependencyProperty StatusMessageProperty =
             DependencyProperty.Register(
                 "StatusMessage",
                 typeof(Option<string>),
                 typeof(StatusMessageView),
                 new FrameworkPropertyMetadata
                 {
-                    BindsTwoWayByDefault = true,
+                    BindsTwoWayByDefault = false,
                     DefaultUpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
                 });
     }
 
-    class StatusMessageColorConverter : IValueConverter
+    class StatusMessageColorConverter : NoConvertBackValueConverter
     {
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        public override object Convert(
+            object value, Type targetType, object parameter, CultureInfo culture)
         {
             if (!(value is Option<string>))
             {
@@ -51,16 +52,12 @@ namespace ShaderBaker.View
                 return "#FF00FF00";
             }
         }
-
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            throw new InvalidOperationException("ConvertBack() not supported!");
-        }
     }
 
-    class StatusMessageTextConverter : IValueConverter
+    class StatusMessageTextConverter : NoConvertBackValueConverter
     {
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        public override object Convert(
+            object value, Type targetType, object parameter, CultureInfo culture)
         {
             if (!(value is Option<string>))
             {
@@ -75,11 +72,6 @@ namespace ShaderBaker.View
             {
                 return "Status: OK";
             }
-        }
-
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            throw new InvalidOperationException("ConvertBack() not supported!");
         }
     }
 }

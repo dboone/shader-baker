@@ -90,6 +90,7 @@
     <Compile Include="ViewModel\ShaderTextViewModel.cs" />
     <Compile Include="ViewModel\ToolbarViewModel.cs" />
     <Compile Include="ViewModel\ViewModelBase.cs" />
+    <Compile Include="View\NoConvertBackValueConverter.cs" />
     <Compile Include="View\ProgramRendererView.xaml.cs">
       <DependentUpon>ProgramRendererView.xaml</DependentUpon>
     </Compile>
