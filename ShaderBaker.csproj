@@ -85,6 +85,9 @@
     <Compile Include="View\ProgramRendererView.xaml.cs">
       <DependentUpon>ProgramRendererView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="View\StatusMessageView.xaml.cs">
+      <DependentUpon>StatusMessageView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="View\ShaderTextView.xaml.cs">
       <DependentUpon>ShaderTextView.xaml</DependentUpon>
     </Compile>
@@ -107,6 +110,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="View\StatusMessageView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="View\ShaderTextView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -117,7 +124,6 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Model\Shader.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>

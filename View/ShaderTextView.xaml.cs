@@ -4,12 +4,9 @@ using System.Windows.Data;
 
 namespace ShaderBaker.View
 {
-    /// <summary>
-    /// Interaction logic for ShaderTextView.xaml
-    /// </summary>
     public partial class ShaderTextView : UserControl
     {
-        public string TheEditableText
+        public string ShaderText
         {
             get { return (string)GetValue(TheEditableTextProperty); }
             set { SetValue(TheEditableTextProperty, value); }
@@ -17,7 +14,7 @@ namespace ShaderBaker.View
 
         public static readonly DependencyProperty TheEditableTextProperty =
             DependencyProperty.Register(
-                "TheEditableText",
+                "ShaderText",
                 typeof(string),
                 typeof(ShaderTextView),
                 new FrameworkPropertyMetadata

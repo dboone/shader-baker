@@ -6,13 +6,48 @@ using SharpGL;
 using System;
 using System.Windows;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 
 namespace ShaderBaker.ViewModel
 {
     class ProgramRendererViewModel : ViewModelBase
     {
+        private Option<string> vertexCompileStatus;
+
+        public Option<string> VertexCompileStatus
+        {
+            get { return vertexCompileStatus; }
+            set
+            {
+                vertexCompileStatus = value;
+                OnPropertyChanged("VertexCompileStatus");
+            }
+        }
+
+        private Option<string> fragmentCompileStatus;
+
+        public Option<string> FragmentCompileStatus
+        {
+            get { return fragmentCompileStatus; }
+            set
+            {
+                fragmentCompileStatus = value;
+                OnPropertyChanged("FragmentCompileStatus");
+            }
+        }
+
+        private Option<string> programLinkStatus;
+
+        public Option<string> ProgramLinkStatus
+        {
+            get { return programLinkStatus; }
+            set
+            {
+                programLinkStatus = value;
+                OnPropertyChanged("ProgramLinkStatus");
+            }
+        }
+
         private string vertexShaderSource =
               "#version 330\n"
             + "\n"
@@ -111,7 +146,8 @@ namespace ShaderBaker.ViewModel
             gl.ClearColor(0.2f, 0.2f, 0.2f, 1.0f);
 
             shaderCompiler = new ShaderCompiler(gl, glContextManager);
-            shaderCompiler.ShaderCompiled += onShaderCompiled;
+            shaderCompiler.VertexShaderCompiled += onVertexShaderCompiled;
+            shaderCompiler.FragmentShaderCompiled += onFragmentShaderCompiled;
             shaderCompiler.ProgramLinked += onProgramLinked;
             programInputs = new NullShaderInputs(gl);
 
@@ -124,20 +160,19 @@ namespace ShaderBaker.ViewModel
             glContextManager.ResizeRenderContext((int) newSize.Width, (int) newSize.Height);
         }
 
-        private void onShaderCompiled(ShaderCompiler sender, uint shaderHandle, Option<string> compileStatus)
+        private void onVertexShaderCompiled(ShaderCompiler sender, uint shaderHandle, Option<string> compileStatus)
         {
-            if (compileStatus.hasValue())
-            {
-                Console.WriteLine("Shader failed to compile:\n" + compileStatus.get());
-            }
+            VertexCompileStatus = compileStatus;
+        }
+
+        private void onFragmentShaderCompiled(ShaderCompiler sender, uint shaderHandle, Option<string> compileStatus)
+        {
+            FragmentCompileStatus = compileStatus;
         }
 
         private void onProgramLinked(ShaderCompiler sender, Option<string> linkStatus)
         {
-            if (linkStatus.hasValue())
-            {
-                Console.WriteLine("Program failed to link:\n" + linkStatus.get());
-            }
+            ProgramLinkStatus = linkStatus;
         }
 
         private void onRender(OpenGL gl)

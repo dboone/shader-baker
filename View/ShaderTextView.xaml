@@ -11,6 +11,6 @@
                  FontSize="14"
                  ScrollViewer.VerticalScrollBarVisibility="Auto"
                  ScrollViewer.HorizontalScrollBarVisibility="Auto"
-                 Text="{Binding Path=TheEditableText, UpdateSourceTrigger=PropertyChanged}"/>
+                 Text="{Binding ShaderText, UpdateSourceTrigger=PropertyChanged}"/>
     </Grid>
 </UserControl>

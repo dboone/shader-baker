@@ -9,28 +9,52 @@
         <vm:ProgramRendererViewModel/>
     </Window.DataContext>
     <DockPanel>
-        <vw:ToolbarView DockPanel.Dock="Top"/>
         <Grid>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="5"/>
                 <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="5"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
-            <vw:ShaderTextView Grid.Column="0"
-                               TheEditableText="{Binding VertexShaderSource}"/>
-            <GridSplitter Grid.Column="1"
-                          Width="5"
-                          VerticalAlignment="Stretch"
+            <Grid.RowDefinitions>
+                <RowDefinition Height="250"/>
+                <RowDefinition Height="5"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            <vw:ShaderTextView Grid.Row="0"
+                               Grid.Column="0"                
+                               ShaderText="{Binding VertexShaderSource}"/>
+            <GridSplitter Grid.Row="0"
+                          Grid.Column="1"
+                          Grid.RowSpan="3"
+                          HorizontalAlignment="Stretch"
                           ResizeBehavior="PreviousAndNext"/>
-            <vw:ProgramRendererView Grid.Column="2"/>
-            <GridSplitter Grid.Column="3"
-                          Width="5"
-                          VerticalAlignment="Stretch"
+            <vw:ProgramRendererView Grid.Row="0"
+                                    Grid.Column="2"
+                                    Grid.RowSpan="2"/>
+            <GridSplitter Grid.Row="0"
+                          Grid.Column="3"
+                          Grid.RowSpan="3"
+                          HorizontalAlignment="Stretch"
                           ResizeBehavior="PreviousAndNext"/>
-            <vw:ShaderTextView Grid.Column="4"
-                               TheEditableText="{Binding FragmentShaderSource}"/>
+            <vw:ShaderTextView Grid.Row="0"
+                               Grid.Column="4"
+                               ShaderText="{Binding FragmentShaderSource}"/>
+            <GridSplitter Grid.Row="1"
+                          Grid.Column="0"
+                          Grid.ColumnSpan="5"
+                          HorizontalAlignment="Stretch"
+                          ResizeBehavior="PreviousAndNext"/>
+            <vw:StatusMessageView Grid.Row="2"
+                                 Grid.Column="0"
+                                 StatusMessage="{Binding VertexCompileStatus}"/>
+            <vw:StatusMessageView Grid.Row="2"
+                                 Grid.Column="2"
+                                 StatusMessage="{Binding ProgramLinkStatus}"/>
+            <vw:StatusMessageView Grid.Row="2"
+                                 Grid.Column="4"
+                                 StatusMessage="{Binding FragmentCompileStatus}"/>
         </Grid>
     </DockPanel>
 </Window>
