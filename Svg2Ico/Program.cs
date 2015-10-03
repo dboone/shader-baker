@@ -1,4 +1,4 @@
-﻿//svg2ico [--help] [--outdir <directory>] [--recurse] [--size <sizespec>] --[<path>...]
+﻿//svg2ico [--help] [--outdir <directory>] [--recurse] [--size <sizespec>] -- [<path>...]
 //
 // # Options
 //
@@ -290,7 +290,7 @@ class Program
     private static void ShowHelp()
     {
         Console.WriteLine(
-@"svg2ico[--help][--outdir<directory>][--recurse][--size<sizespec>]--[< path>...]
+@"svg2ico [--help] [--outdir<directory>] [--recurse] [--size<sizespec>] -- [<path>...]
 
 # Options
 
@@ -301,7 +301,7 @@ class Program
 
 <directory>
 
-    The directory in which to write.ico files.Writes them next to the
+    The directory in which to write .ico files. Writes them next to the
     .svg image that generated them if not specified.
 
 <path>
@@ -310,7 +310,7 @@ class Program
 
 <sizespec>
 
-    Resolution(s) to write in each.ico file.See below for the
+    Resolution(s) to write in each .ico file. See below for the
     format specification.
 
 -h, --help
@@ -327,7 +327,7 @@ class Program
 
 -s, --size
 
-    Specifies a resolution to place in each output.ico file. Use this
+    Specifies a resolution to place in each output .ico file. Use this
     option multiple times to specify multiple resolutions.
 
 # Size Specification
