@@ -90,6 +90,9 @@
     <Compile Include="View\ProgramRendererView.xaml.cs">
       <DependentUpon>ProgramRendererView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="View\ShaderListItemView.xaml.cs">
+      <DependentUpon>ShaderListItemView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="View\StatusMessageView.xaml.cs">
       <DependentUpon>StatusMessageView.xaml</DependentUpon>
     </Compile>
@@ -112,6 +115,10 @@
       <SubType>Code</SubType>
     </Compile>
     <Page Include="View\ProgramRendererView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\ShaderListItemView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -156,7 +163,11 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Resource Include="Media\Icons\Shader\VertexShader.png" />
+    <Resource Include="Media\Icons\Shader\FragmentShader.png" />
+    <Resource Include="Media\Icons\Shader\GeometryShader.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

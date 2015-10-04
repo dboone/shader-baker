@@ -16,45 +16,80 @@
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="5"/>
                 <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="5"/>
+                <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
-                <RowDefinition Height="250"/>
+                <RowDefinition Height="2*"/>
                 <RowDefinition Height="5"/>
-                <RowDefinition Height="*"/>
+                <RowDefinition Height="1*"/>
             </Grid.RowDefinitions>
+            <ListView Grid.Column="0"
+                      Grid.Row="0"
+                      Background="#FF222222"
+                      ItemsSource="{Binding Shaders}">
+                <ListView.DataContext>
+                    <vm:ShaderRepositoryViewModel/>
+                </ListView.DataContext>
+                <ListView.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem Header="_Add">
+                            <MenuItem Header="_Vertex Shader"
+                                      Command="{Binding AddVertexShaderCommand}"/>
+                            <MenuItem Header="_Geometry Shader"
+                                      Command="{Binding AddGeometryShaderCommand}"/>
+                            <MenuItem Header="_Fragment Shader"
+                                      Command="{Binding AddFragmentShaderCommand}"/>
+                        </MenuItem>
+                    </ContextMenu>
+                </ListView.ContextMenu>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <vw:ShaderListItemView Padding="2"
+                                               ShaderName="{Binding ShaderName}"
+                                               ShaderSourceValidity="{Binding SourceValidity}"
+                                               ShaderStage="{Binding Stage}"/>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ListView>
+            
             <vw:ShaderTextView Grid.Row="0"
-                               Grid.Column="0"                
+                               Grid.Column="2"                
                                ShaderText="{Binding VertexShaderSource}"/>
+            <vw:ProgramRendererView Grid.Row="0"
+                                    Grid.Column="4"/>
+            <vw:ShaderTextView Grid.Row="0"
+                               Grid.Column="6"
+                               ShaderText="{Binding FragmentShaderSource}"/>
+            <vw:StatusMessageView Grid.Row="2"
+                                  Grid.Column="2"
+                                  StatusMessage="{Binding VertexCompileStatus}"/>
+            <vw:StatusMessageView Grid.Row="2"
+                                  Grid.Column="4"
+                                  StatusMessage="{Binding ProgramLinkStatus}"/>
+            <vw:StatusMessageView Grid.Row="2"
+                                  Grid.Column="6"
+                                  StatusMessage="{Binding FragmentCompileStatus}"/>
             <GridSplitter Grid.Row="0"
                           Grid.Column="1"
                           Grid.RowSpan="3"
                           HorizontalAlignment="Stretch"
                           ResizeBehavior="PreviousAndNext"/>
-            <vw:ProgramRendererView Grid.Row="0"
-                                    Grid.Column="2"
-                                    Grid.RowSpan="2"/>
             <GridSplitter Grid.Row="0"
                           Grid.Column="3"
                           Grid.RowSpan="3"
                           HorizontalAlignment="Stretch"
                           ResizeBehavior="PreviousAndNext"/>
-            <vw:ShaderTextView Grid.Row="0"
-                               Grid.Column="4"
-                               ShaderText="{Binding FragmentShaderSource}"/>
-            <GridSplitter Grid.Row="1"
-                          Grid.Column="0"
-                          Grid.ColumnSpan="5"
+            <GridSplitter Grid.Row="0"
+                          Grid.Column="5"
+                          Grid.RowSpan="3"
                           HorizontalAlignment="Stretch"
                           ResizeBehavior="PreviousAndNext"/>
-            <vw:StatusMessageView Grid.Row="2"
-                                 Grid.Column="0"
-                                 StatusMessage="{Binding VertexCompileStatus}"/>
-            <vw:StatusMessageView Grid.Row="2"
-                                 Grid.Column="2"
-                                 StatusMessage="{Binding ProgramLinkStatus}"/>
-            <vw:StatusMessageView Grid.Row="2"
-                                 Grid.Column="4"
-                                 StatusMessage="{Binding FragmentCompileStatus}"/>
+            <GridSplitter Grid.Row="1"
+                          Grid.Column="0"
+                          Grid.ColumnSpan="7"
+                          HorizontalAlignment="Stretch"
+                          ResizeBehavior="PreviousAndNext"/>
         </Grid>
     </DockPanel>
 </Window>

@@ -2,7 +2,12 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:local="clr-namespace:ShaderBaker">
-    <Application.Resources>
-         
+    <Application.Resources>       
+        <BitmapImage x:Key="VertexShaderIcon"
+                     UriSource="/ShaderBaker;component/Media/Icons/Shader/VertexShader.png"/>
+        <BitmapImage x:Key="GeometryShaderIcon"
+                     UriSource="/ShaderBaker;component/Media/Icons/Shader/GeometryShader.png"/>
+        <BitmapImage x:Key="FragmentShaderIcon"
+                     UriSource="/ShaderBaker;component/Media/Icons/Shader/FragmentShader.png"/>
     </Application.Resources>
 </Application>
