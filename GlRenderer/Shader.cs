@@ -8,6 +8,15 @@ namespace ShaderBaker.GlRenderer
 public sealed class Shader
 {
     /// <summary>
+    /// The name of the shader
+    /// </summary>
+    public string Name
+    {
+        get;
+        set;
+    }
+
+    /// <summary>
     /// The shader's stage in the program pipeline
     /// </summary>
     public readonly ProgramStage Stage;
@@ -17,10 +26,11 @@ public sealed class Shader
     /// </summary>
     public readonly ICollection<Program> ParentPrograms;
 
+    private string source;
+
     /// <summary>
     /// The source code for this shader
     /// </summary>
-    private string source;
     public string Source
     {
         get { return source; }
@@ -55,6 +65,7 @@ public sealed class Shader
 
     public Shader(ProgramStage stage)
     {
+        Name = stage.ToString() + "Shader";
         Stage = stage;
         ParentPrograms = new List<Program>();
         Source = "";

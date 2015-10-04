@@ -8,6 +8,19 @@ public class ShaderViewModel : ViewModelBase
 {
     public readonly Shader shader;
 
+    public string ShaderName
+    {
+        get
+        {
+            return shader.Name;
+        }
+        set
+        {
+            shader.Name = value;
+            OnPropertyChanged("ShaderName");
+        }
+    }
+
     public ProgramStage Stage
     {
         get { return shader.Stage; }
