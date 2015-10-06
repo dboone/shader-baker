@@ -51,6 +51,7 @@ public class ProgramViewModel : ViewModelBase
 
         shaderViewModel.AttachToProgram(program);
         shadersByStage.Add(shaderViewModel.Stage, shaderViewModel);
+        AttachedShaders.Add(shaderViewModel);
     }
 
     public void DetachShader(ShaderViewModel shaderViewModel)
