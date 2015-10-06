@@ -7,6 +7,12 @@ namespace ShaderBaker.GlRenderer
 
 public sealed class Program
 {
+    public string Name
+    {
+        get;
+        set;
+    }
+
     /// <summary>
     /// The shaders attached to this Program, keyed by their ProgramPipelineStage
     /// </summary>
@@ -36,6 +42,7 @@ public sealed class Program
 
     public Program()
     {
+        Name = "Program";
         ShadersByStage = new Dictionary<ProgramStage, Shader>();
         ResetLinkageValidity();
     }

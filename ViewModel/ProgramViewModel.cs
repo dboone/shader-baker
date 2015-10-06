@@ -10,6 +10,12 @@ namespace ShaderBaker.ViewModel
 public class ProgramViewModel : ViewModelBase
 {
     private readonly Program program;
+
+    public string ProgramName
+    {
+        get { return program.Name; }
+        set { program.Name = value; }
+    }
     
     private readonly IDictionary<ProgramStage, ShaderViewModel> shadersByStage;
     
