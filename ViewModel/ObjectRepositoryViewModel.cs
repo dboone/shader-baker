@@ -1,17 +1,23 @@
 ﻿using ShaderBaker.GlRenderer;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Windows.Input;
-using System;
 
 namespace ShaderBaker.ViewModel
 {
 
-public class ShaderRepositoryViewModel
+class ObjectRepositoryViewModel
 {
     private readonly IDictionary<Shader, ShaderViewModel> shaderViewModelsByShader;
     
     public ObservableCollection<ShaderViewModel> Shaders
+    {
+        get;
+        private set;
+    }
+
+    public ObservableCollection<ProgramViewModel> Programs
     {
         get;
         private set;
@@ -35,10 +41,18 @@ public class ShaderRepositoryViewModel
         private set;
     }
 
-    public ShaderRepositoryViewModel()
+    public ICommand AddProgramCommand
     {
+        get;
+        private set;
+    }
+
+    public ObjectRepositoryViewModel()
+    {
+        Programs = new ObservableCollection<ProgramViewModel>();
         shaderViewModelsByShader = new Dictionary<Shader, ShaderViewModel>();
         Shaders = new ObservableCollection<ShaderViewModel>();
+        AddProgramCommand = new AddProgramCommandImpl(this);
         AddVertexShaderCommand = new AddShaderCommand(this, ProgramStage.Vertex);
         AddGeometryShaderCommand = new AddShaderCommand(this, ProgramStage.Geometry);
         AddFragmentShaderCommand = new AddShaderCommand(this, ProgramStage.Fragment);
@@ -55,19 +69,23 @@ public class ShaderRepositoryViewModel
         shaderViewModelsByShader.Add(shader, shaderViewModel);
         Shaders.Add(shaderViewModel);
     }
+    
+    private void addProgram()
+    {
+        Programs.Add(new ProgramViewModel());
+    }
 
     private class AddShaderCommand : ICommand
     {
-        private readonly ShaderRepositoryViewModel shaderRepo;
+        private readonly ObjectRepositoryViewModel repo;
 
         private readonly ProgramStage stage;
 
         public event EventHandler CanExecuteChanged;
 
-        public AddShaderCommand(
-            ShaderRepositoryViewModel shaderRepo, ProgramStage stage)
+        public AddShaderCommand(ObjectRepositoryViewModel repo, ProgramStage stage)
         {
-            this.shaderRepo = shaderRepo;
+            this.repo = repo;
             this.stage = stage;
         }
 
@@ -78,7 +96,29 @@ public class ShaderRepositoryViewModel
 
         public void Execute(object parameter)
         {
-            shaderRepo.addShader(new Shader(stage));
+            repo.addShader(new Shader(stage));
+        }
+    }
+
+    private class AddProgramCommandImpl : ICommand
+    {
+        private readonly ObjectRepositoryViewModel repo;
+
+        public event EventHandler CanExecuteChanged;
+
+        public AddProgramCommandImpl(ObjectRepositoryViewModel repo)
+        {
+            this.repo = repo;
+        }
+
+        public bool CanExecute(object parameter)
+        {
+            return true;
+        }
+
+        public void Execute(object parameter)
+        {
+            repo.addProgram();
         }
     }
 }

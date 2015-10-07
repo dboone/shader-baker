@@ -78,9 +78,8 @@
     <Compile Include="GlUtilities\ShaderUtilities.cs" />
     <Compile Include="GlUtilities\ProgramUtilities.cs" />
     <Compile Include="Utilities\Option.cs" />
-    <Compile Include="ViewModel\ProgramRepositoryViewModel.cs" />
+    <Compile Include="ViewModel\ObjectRepositoryViewModel.cs" />
     <Compile Include="ViewModel\ProgramViewModel.cs" />
-    <Compile Include="ViewModel\ShaderRepositoryViewModel.cs" />
     <Compile Include="ViewModel\ShaderViewModel.cs" />
     <Compile Include="ViewModel\ProgramRendererViewModel.cs" />
     <Compile Include="ViewModel\ShaderTextViewModel.cs" />

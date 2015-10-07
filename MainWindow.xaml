@@ -35,7 +35,7 @@
                       Background="#FF222222"
                       ItemsSource="{Binding Shaders}">
                 <ListView.DataContext>
-                    <vm:ShaderRepositoryViewModel/>
+                    <vm:ObjectRepositoryViewModel/>
                 </ListView.DataContext>
                 <ListView.ContextMenu>
                     <ContextMenu>
@@ -64,7 +64,7 @@
                       Background="#FF222222"
                       ItemsSource="{Binding Programs}">
                 <TreeView.DataContext>
-                    <vm:ProgramRepositoryViewModel/>
+                    <vm:ObjectRepositoryViewModel/>
                 </TreeView.DataContext>
                 <TreeView.Resources>
                     <HierarchicalDataTemplate DataType="{x:Type vm:ProgramViewModel}"
