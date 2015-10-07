@@ -79,6 +79,12 @@
                                                ShaderStage="{Binding Stage}"/>
                     </DataTemplate>
                 </TreeView.Resources>
+                <TreeView.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem Header="Add _Program"
+                                  Command="{Binding AddProgramCommand}"/>
+                    </ContextMenu>
+                </TreeView.ContextMenu>
             </TreeView>
 
             <vw:ShaderTextView Grid.Row="0"
