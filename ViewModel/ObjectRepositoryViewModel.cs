@@ -47,6 +47,29 @@ class ObjectRepositoryViewModel
         private set;
     }
 
+    private ShaderViewModel selectedShader;
+    public ShaderViewModel SelectedShader
+    {
+        get
+        {
+            return selectedShader;
+        }
+        set
+        {
+            selectedShader = value;
+            renameShaderCommand.RaiseCanExecuteChanged();
+        }
+    }
+
+    private RenameShaderCommandImpl renameShaderCommand;
+    public ICommand RenameShaderCommand
+    {
+        get
+        {
+            return renameShaderCommand;
+        }
+    }
+
     public ObjectRepositoryViewModel()
     {
         Programs = new ObservableCollection<ProgramViewModel>();
@@ -56,6 +79,7 @@ class ObjectRepositoryViewModel
         AddVertexShaderCommand = new AddShaderCommand(this, ProgramStage.Vertex);
         AddGeometryShaderCommand = new AddShaderCommand(this, ProgramStage.Geometry);
         AddFragmentShaderCommand = new AddShaderCommand(this, ProgramStage.Fragment);
+        renameShaderCommand = new RenameShaderCommandImpl(this);
     }
 
     public ShaderViewModel GetViewModelForShader(Shader shader)
@@ -119,6 +143,33 @@ class ObjectRepositoryViewModel
         public void Execute(object parameter)
         {
             repo.addProgram();
+        }
+    }
+
+    private class RenameShaderCommandImpl : ICommand
+    {
+        private readonly ObjectRepositoryViewModel repo;
+
+        public event EventHandler CanExecuteChanged;
+
+        public RenameShaderCommandImpl(ObjectRepositoryViewModel repo)
+        {
+            this.repo = repo;
+        }
+
+        public void RaiseCanExecuteChanged()
+        {
+            CanExecuteChanged(repo, EventArgs.Empty);
+        }
+
+        public bool CanExecute(object parameter)
+        {
+            return repo.SelectedShader != null;
+        }
+
+        public void Execute(object parameter)
+        {
+            repo.SelectedShader.Renaming = true;
         }
     }
 }

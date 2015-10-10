@@ -46,9 +46,24 @@ public class ShaderViewModel : ViewModelBase
         get { return shader.CompilationError; }
     }
 
+    private bool renaming;
+    public bool Renaming
+    {
+        get
+        {
+            return renaming;
+        }
+        set
+        {
+            this.renaming = value;
+            OnPropertyChanged("Renaming");
+        }
+    }
+
     public ShaderViewModel(Shader shader)
     {
         this.shader = shader;
+        renaming = false;
         shader.SourceValidityChanged += onSourceValidityChanged;
     }
 

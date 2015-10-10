@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
+using System.Windows.Input;
 
 namespace ShaderBaker.View
 {
@@ -44,7 +45,7 @@ public partial class ShaderListItemView : UserControl
             typeof(ShaderListItemView),
             new FrameworkPropertyMetadata
             {
-                BindsTwoWayByDefault = false,
+                BindsTwoWayByDefault = true,
                 DefaultUpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
             });
 
@@ -65,10 +66,82 @@ public partial class ShaderListItemView : UserControl
                 DefaultUpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
             });
 
+    public bool Renaming
+    {
+        get { return (bool) GetValue(RenamingProperty); }
+        set
+        {
+            SetValue(RenamingProperty, value);
+        }
+    }
+
+    private static readonly DependencyProperty RenamingProperty =
+        DependencyProperty.Register(
+            "Renaming",
+            typeof(bool),
+            typeof(ShaderListItemView),
+            new FrameworkPropertyMetadata
+            {
+                BindsTwoWayByDefault = false,
+                DefaultUpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged,
+                DefaultValue = false,
+                PropertyChangedCallback = (d, e) => (d as ShaderListItemView).onRenamingChanged((bool) e.NewValue)
+            });
+
     public ShaderListItemView()
     {
         InitializeComponent();
         LayoutRoot.DataContext = this;
+    }
+
+    private void onRenamingChanged(bool renaming)
+    {
+        if (renaming)
+        {
+            ShaderNameTextBlock.Visibility = Visibility.Hidden;
+            ShaderNameTextBox.Text = ShaderName;
+            ShaderNameTextBox.SelectAll();
+            ShaderNameTextBox.Visibility = Visibility.Visible;
+            ShaderNameTextBox.Focus();
+        } else
+        {
+            ShaderNameTextBlock.Visibility = Visibility.Visible;
+            ShaderNameTextBox.Visibility = Visibility.Hidden;
+        }
+    }
+
+    private void stopRenaming()
+    {
+        Renaming = false;
+    }
+
+    private void confirmRename()
+    {
+        ShaderName = ShaderNameTextBox.Text;
+        stopRenaming();
+    }
+
+    private void cancelRename()
+    {
+        stopRenaming();
+    }
+
+    private void ShaderNameTextBox_LostKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e)
+    {
+        confirmRename();
+    }
+
+    private void ShaderNameTextBox_KeyDown(object sender, KeyEventArgs e)
+    {
+        switch (e.Key)
+        {
+        case Key.Return:
+            confirmRename();
+            break;
+        case Key.Escape:
+            cancelRename();
+            break;
+        }
     }
 }
 
