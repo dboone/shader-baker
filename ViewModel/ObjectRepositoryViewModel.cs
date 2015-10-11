@@ -7,7 +7,7 @@ using System.Windows.Input;
 namespace ShaderBaker.ViewModel
 {
 
-class ObjectRepositoryViewModel
+class ObjectRepositoryViewModel : ViewModelBase
 {
     private readonly IDictionary<Shader, ShaderViewModel> shaderViewModelsByShader;
     
@@ -15,6 +15,23 @@ class ObjectRepositoryViewModel
     {
         get;
         private set;
+    }
+
+    public ObservableCollection<ShaderViewModel> OpenShaders
+    {
+        get;
+        private set;
+    }
+
+    private int activeOpenShaderIndex;
+    public int ActiveOpenShaderIndex
+    {
+        get { return activeOpenShaderIndex; }
+        set
+        {
+            activeOpenShaderIndex = value;
+            OnPropertyChanged("ActiveOpenShaderIndex");
+        }
     }
 
     public ObservableCollection<ProgramViewModel> Programs
@@ -75,6 +92,8 @@ class ObjectRepositoryViewModel
         Programs = new ObservableCollection<ProgramViewModel>();
         shaderViewModelsByShader = new Dictionary<Shader, ShaderViewModel>();
         Shaders = new ObservableCollection<ShaderViewModel>();
+        OpenShaders = new ObservableCollection<ShaderViewModel>();
+        activeOpenShaderIndex = -1;
         AddProgramCommand = new AddProgramCommandImpl(this);
         AddVertexShaderCommand = new AddShaderCommand(this, ProgramStage.Vertex);
         AddGeometryShaderCommand = new AddShaderCommand(this, ProgramStage.Geometry);
@@ -85,6 +104,24 @@ class ObjectRepositoryViewModel
     public ShaderViewModel GetViewModelForShader(Shader shader)
     {
         return shaderViewModelsByShader[shader];
+    }
+
+    public void OpenSelectedShader()
+    {
+        if (selectedShader == null)
+        {
+            return;
+        }
+
+        var openShaderIndex = OpenShaders.IndexOf(selectedShader);
+        if (openShaderIndex == -1)
+        {
+            OpenShaders.Add(selectedShader);
+            ActiveOpenShaderIndex = OpenShaders.Count - 1;   
+        } else
+        {
+            ActiveOpenShaderIndex = openShaderIndex;
+        }
     }
 
     private void addShader(Shader shader)

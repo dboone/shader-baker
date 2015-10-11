@@ -13,11 +13,16 @@
     <Window.DataContext>
         <vm:ProgramRendererViewModel/>
     </Window.DataContext>
+    <Window.Resources>
+        <vm:ObjectRepositoryViewModel x:Key="ObjectRepoViewModel"/>
+        <Style TargetType="GridSplitter">
+            <Setter Property="Background" Value="#FF333333"/>
+            <Setter Property="BorderBrush" Value="{x:Null}"/>
+        </Style>
+    </Window.Resources>
     <DockPanel>
-        <Grid>
+        <Grid Background="#FF222222">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="5"/>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="5"/>
                 <ColumnDefinition Width="*"/>
@@ -25,19 +30,19 @@
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
-                <RowDefinition Height="2*"/>
+                <RowDefinition Height="*"/>
                 <RowDefinition Height="5"/>
-                <RowDefinition Height="1*"/>
+                <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
-            
-            <ListView Grid.Column="0"
+            <ListView Name="ShaderListView"
                       Grid.Row="0"
+                      Grid.Column="0"
                       Background="#FF222222"
                       ItemsSource="{Binding Shaders}"
-                      SelectedItem="{Binding SelectedShader}">
-                <ListView.DataContext>
-                    <vm:ObjectRepositoryViewModel/>
-                </ListView.DataContext>
+                      SelectedItem="{Binding SelectedShader}"
+                      MouseDoubleClick="ShaderListView_MouseDoubleClick"
+                      DataContext="{StaticResource ObjectRepoViewModel}"
+                      BorderBrush="{x:Null}">
                 <ListView.ContextMenu>
                     <ContextMenu>
                         <MenuItem Header="_Add">
@@ -65,14 +70,12 @@
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ListView>
-
-            <TreeView Grid.Column="0"
-                      Grid.Row="3"
+            <TreeView Grid.Row="2"
+                      Grid.Column="0"
                       Background="#FF222222"
-                      ItemsSource="{Binding Programs}">
-                <TreeView.DataContext>
-                    <vm:ObjectRepositoryViewModel/>
-                </TreeView.DataContext>
+                      ItemsSource="{Binding Programs}"
+                      BorderBrush="{x:Null}"
+                      DataContext="{StaticResource ObjectRepoViewModel}">
                 <TreeView.Resources>
                     <HierarchicalDataTemplate DataType="{x:Type vm:ProgramViewModel}"
                                               ItemsSource="{Binding AttachedShaders}">
@@ -93,25 +96,61 @@
                     </ContextMenu>
                 </TreeView.ContextMenu>
             </TreeView>
-
-            <vw:ShaderTextView Grid.Row="0"
-                               Grid.Column="2"                
-                               ShaderText="{Binding VertexShaderSource}"/>
             <vw:ProgramRendererView Grid.Row="0"
                                     Grid.Column="4"
-                                    d:IsHidden="true"/>
-            <vw:ShaderTextView Grid.Row="0"
-                               Grid.Column="6"
-                               ShaderText="{Binding FragmentShaderSource}"/>
-            <vw:StatusMessageView Grid.Row="2"
-                                  Grid.Column="2"
-                                  StatusMessage="{Binding VertexCompileStatus}"/>
-            <vw:StatusMessageView Grid.Row="2"
-                                  Grid.Column="4"
-                                  StatusMessage="{Binding ProgramLinkStatus}"/>
-            <vw:StatusMessageView Grid.Row="2"
-                                  Grid.Column="6"
-                                  StatusMessage="{Binding FragmentCompileStatus}"/>
+                                    Grid.RowSpan="3"
+                                    d:IsHidden="false"/>
+            <TabControl Name="ShaderTabTextView"
+                        Grid.Row="0"
+                        Grid.Column="2"
+                        Grid.RowSpan="3"
+                        Background="#FF222222"
+                        BorderBrush="{x:Null}"
+                        ItemsSource="{Binding OpenShaders}"
+                        DataContext="{StaticResource ObjectRepoViewModel}"
+                        SelectedIndex="{Binding ActiveOpenShaderIndex}">
+                <TabControl.Resources>
+                    <Style TargetType="TabItem">
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="TabItem">
+                                    <Grid Name="Panel">
+                                        <ContentPresenter VerticalAlignment="Center"
+                                                          HorizontalAlignment="Center"
+                                                          ContentSource="Header"
+                                                          Margin="10,2"/>
+                                    </Grid>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsSelected" Value="True">
+                                            <Setter TargetName="Panel" Property="Background" Value="#FF333333"/>
+                                        </Trigger>
+                                        <Trigger Property="IsSelected" Value="False">
+                                            <Setter TargetName="Panel" Property="Background" Value="#FF222222"/>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+                </TabControl.Resources>
+                <TabControl.ItemTemplate>
+                    <DataTemplate>
+                        <vw:ShaderListItemView Padding="2"
+                                               ShaderName="{Binding ShaderName}"
+                                               ShaderSourceValidity="{Binding SourceValidity}"
+                                               ShaderStage="{Binding Stage}"/>
+                    </DataTemplate>
+                </TabControl.ItemTemplate>
+                <TabControl.ContentTemplate>
+                    <DataTemplate>
+                        <vw:ShaderTextView ShaderText="{Binding Source}"/>
+                    </DataTemplate>
+                </TabControl.ContentTemplate>
+            </TabControl>
+            <GridSplitter Grid.Row="1"
+                          Grid.Column="0"
+                          HorizontalAlignment="Stretch"
+                          ResizeBehavior="PreviousAndNext"/>
             <GridSplitter Grid.Row="0"
                           Grid.Column="1"
                           Grid.RowSpan="3"
@@ -120,16 +159,6 @@
             <GridSplitter Grid.Row="0"
                           Grid.Column="3"
                           Grid.RowSpan="3"
-                          HorizontalAlignment="Stretch"
-                          ResizeBehavior="PreviousAndNext"/>
-            <GridSplitter Grid.Row="0"
-                          Grid.Column="5"
-                          Grid.RowSpan="3"
-                          HorizontalAlignment="Stretch"
-                          ResizeBehavior="PreviousAndNext"/>
-            <GridSplitter Grid.Row="1"
-                          Grid.Column="0"
-                          Grid.ColumnSpan="7"
                           HorizontalAlignment="Stretch"
                           ResizeBehavior="PreviousAndNext"/>
         </Grid>
