@@ -169,7 +169,10 @@ class ObjectRepositoryViewModel
 
         public void Execute(object parameter)
         {
-            repo.SelectedShader.Renaming = true;
+            if (!repo.SelectedShader.Renaming)
+            {
+                repo.SelectedShader.Renaming = true;
+            }
         }
     }
 }

@@ -69,10 +69,7 @@ public partial class ShaderListItemView : UserControl
     public bool Renaming
     {
         get { return (bool) GetValue(RenamingProperty); }
-        set
-        {
-            SetValue(RenamingProperty, value);
-        }
+        set { SetValue(RenamingProperty, value); }
     }
 
     private static readonly DependencyProperty RenamingProperty =
@@ -82,7 +79,7 @@ public partial class ShaderListItemView : UserControl
             typeof(ShaderListItemView),
             new FrameworkPropertyMetadata
             {
-                BindsTwoWayByDefault = false,
+                BindsTwoWayByDefault = true,
                 DefaultUpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged,
                 DefaultValue = false,
                 PropertyChangedCallback = (d, e) => (d as ShaderListItemView).onRenamingChanged((bool) e.NewValue)
@@ -105,8 +102,8 @@ public partial class ShaderListItemView : UserControl
             ShaderNameTextBox.Focus();
         } else
         {
-            ShaderNameTextBlock.Visibility = Visibility.Visible;
             ShaderNameTextBox.Visibility = Visibility.Hidden;
+            ShaderNameTextBlock.Visibility = Visibility.Visible;
         }
     }
 
@@ -128,7 +125,10 @@ public partial class ShaderListItemView : UserControl
 
     private void ShaderNameTextBox_LostKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e)
     {
-        confirmRename();
+        if (Renaming)
+        {
+            confirmRename();
+        }
     }
 
     private void ShaderNameTextBox_KeyDown(object sender, KeyEventArgs e)

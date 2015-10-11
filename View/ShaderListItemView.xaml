@@ -16,7 +16,6 @@
                        Margin="2,0,0,0"
                        Text="{Binding ShaderName}"
                        Foreground="{Binding ShaderSourceValidity, Converter={StaticResource ValidityToColorConverter}}"
-                       Background="Green"
                        Visibility="Visible"
                        VerticalAlignment="Center"/>
             <TextBox Name="ShaderNameTextBox"
