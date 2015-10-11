@@ -42,6 +42,18 @@ public class ProgramViewModel : ViewModelBase
         AttachedShaders = new ObservableCollection<ShaderViewModel>();
     }
 
+    public Option<ShaderViewModel> GetShaderForStage(ProgramStage stage)
+    {
+        ShaderViewModel shader;
+        if (shadersByStage.TryGetValue(stage, out shader))
+        {
+            return Option<ShaderViewModel>.of(shader);
+        } else
+        {
+            return Option<ShaderViewModel>.empty();
+        }
+    }
+
     public void AttachShader(ShaderViewModel shaderViewModel)
     {
         Debug.Assert(
@@ -62,6 +74,8 @@ public class ProgramViewModel : ViewModelBase
             removed,
             "No shader is attached to the " + shaderViewModel.Stage
                 + " stage of this program view model");
+
+        AttachedShaders.Remove(shaderViewModel);
     }
 
     private void onLinkageValidityChanged(

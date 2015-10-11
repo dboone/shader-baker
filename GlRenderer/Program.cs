@@ -53,8 +53,12 @@ public sealed class Program
             !ShadersByStage.ContainsKey(shader.Stage),
             "A shader for the " + shader.Stage.ToString()
                 + " stage is already attached to this program");
+        Debug.Assert(
+            !shader.ParentPrograms.Contains(this),
+            "This program is already parented to the shader to be attached");
 
         ShadersByStage.Add(shader.Stage, shader);
+        shader.ParentPrograms.Add(this);
         ResetLinkageValidity();
     }
 

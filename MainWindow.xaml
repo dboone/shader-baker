@@ -75,7 +75,8 @@
                       Background="#FF222222"
                       ItemsSource="{Binding Programs}"
                       BorderBrush="{x:Null}"
-                      DataContext="{StaticResource ObjectRepoViewModel}">
+                      DataContext="{StaticResource ObjectRepoViewModel}"
+                      SelectedItemChanged="ProgramTreeView_SelectedItemChanged">
                 <TreeView.Resources>
                     <HierarchicalDataTemplate DataType="{x:Type vm:ProgramViewModel}"
                                               ItemsSource="{Binding AttachedShaders}">
@@ -93,6 +94,8 @@
                     <ContextMenu>
                         <MenuItem Header="Add _Program"
                                   Command="{Binding AddProgramCommand}"/>
+                        <MenuItem Header="Attach _Selected Shader"
+                                  Command="{Binding AttachSelectedShaderCommand}"/>
                     </ContextMenu>
                 </TreeView.ContextMenu>
             </TreeView>

@@ -12,9 +12,19 @@ public partial class MainWindow : Window
         InitializeComponent();
     }
 
+    private ObjectRepositoryViewModel getDataContext()
+    {
+        return ShaderTabTextView.DataContext as ObjectRepositoryViewModel;
+    }
+
     private void ShaderListView_MouseDoubleClick(object sender, MouseButtonEventArgs e)
     {
-        ((ObjectRepositoryViewModel) ShaderTabTextView.DataContext).OpenSelectedShader();
+       getDataContext().OpenSelectedShader();
+    }
+
+    private void ProgramTreeView_SelectedItemChanged<T>(object sender, RoutedPropertyChangedEventArgs<T> e)
+    {
+       getDataContext().OnProgramTreeSelectionChanged(e.NewValue);
     }
 }
 
