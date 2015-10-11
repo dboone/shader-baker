@@ -82,8 +82,9 @@
                 <TreeView.Resources>
                     <HierarchicalDataTemplate DataType="{x:Type vm:ProgramViewModel}"
                                               ItemsSource="{Binding AttachedShaders}">
-                        <TextBlock Foreground="#FFFAEBD7"
-                                   Text="{Binding ProgramName}"/>
+                        <vw:ProgramView Padding="2"
+                                        ProgramName="{Binding ProgramName}"
+                                        ProgramLinkValidity="{Binding LinkageValidity}"/>
                     </HierarchicalDataTemplate>
                     <DataTemplate DataType="{x:Type vm:ShaderViewModel}">
                         <vw:ShaderListItemView Padding="2"

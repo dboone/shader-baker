@@ -95,6 +95,7 @@ public sealed class Program
         Validity oldValidity = newValidity;
         if (oldValidity != LinkageValidity)
         {
+            LinkageValidity = newValidity;
             var events = LinkageValidityChanged;
             if (events != null)
             {

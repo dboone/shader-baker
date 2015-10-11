@@ -5,7 +5,7 @@
              xmlns:local="clr-namespace:ShaderBaker.View">
     <UserControl.Resources>
         <local:ShaderStageToIconConverter x:Key="StageIconConverter"/>
-        <local:ShaderSourceValidityToColorConverter x:Key="ValidityToColorConverter"/>
+        <local:ValidityToColorConverter x:Key="ValidityToColorConverter"/>
     </UserControl.Resources>
     <StackPanel x:Name="LayoutRoot" Orientation="Horizontal">
         <Image Source="{Binding ShaderStage, Converter={StaticResource StageIconConverter}}"
