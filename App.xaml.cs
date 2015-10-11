@@ -10,8 +10,6 @@ public partial class App : Application
     {
         base.OnStartup(e);
         MainWindow window = new MainWindow();
-        var viewModel = new ProgramRendererViewModel();
-        window.DataContext = viewModel;
         window.Show();
     }
 }
