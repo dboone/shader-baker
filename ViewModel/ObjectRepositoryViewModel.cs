@@ -93,7 +93,7 @@ class ObjectRepositoryViewModel : ViewModelBase
         }
     }
 
-    private RenameShaderCommandImpl renameShaderCommand;
+    private RelayCommand renameShaderCommand;
     public ICommand RenameShaderCommand
     {
         get
@@ -102,7 +102,7 @@ class ObjectRepositoryViewModel : ViewModelBase
         }
     }
 
-    private AttachSelectedShaderCommandImpl attachSelectedShaderCommand;
+    private RelayCommand attachSelectedShaderCommand;
     public ICommand AttachSelectedShaderCommand
     {
         get
@@ -118,14 +118,28 @@ class ObjectRepositoryViewModel : ViewModelBase
         Shaders = new ObservableCollection<ShaderViewModel>();
         OpenShaders = new ObservableCollection<ShaderViewModel>();
         activeOpenShaderIndex = -1;
-        AddProgramCommand = new AddProgramCommandImpl(this);
-        AddVertexShaderCommand = new AddShaderCommand(this, ProgramStage.Vertex);
-        AddGeometryShaderCommand = new AddShaderCommand(this, ProgramStage.Geometry);
-        AddFragmentShaderCommand = new AddShaderCommand(this, ProgramStage.Fragment);
-        renameShaderCommand = new RenameShaderCommandImpl(this);
-        attachSelectedShaderCommand = new AttachSelectedShaderCommandImpl(this);
-    }
 
+        AddProgramCommand = new RelayCommand(() => addProgram());
+
+        AddVertexShaderCommand = new RelayCommand(() => addNewShader(ProgramStage.Vertex));
+        AddGeometryShaderCommand = new RelayCommand(() => addNewShader(ProgramStage.Geometry));
+        AddFragmentShaderCommand = new RelayCommand(() => addNewShader(ProgramStage.Fragment));
+
+        renameShaderCommand = new RelayCommand(
+            () =>
+            {
+                if (!SelectedShader.Renaming)
+                {
+                    SelectedShader.Renaming = true;
+                }
+            },
+            () => isShaderSelected());
+            
+        attachSelectedShaderCommand = new RelayCommand(
+            () => attachSelectedShaderToSelectedProgram(),
+            () => isShaderSelected() && isProgramSelected());
+    }
+    
     private bool isShaderSelected()
     {
         return SelectedShader != null;
@@ -164,6 +178,11 @@ class ObjectRepositoryViewModel : ViewModelBase
         }
     }
 
+    private void addNewShader(ProgramStage stage)
+    {
+        addShader(new Shader(stage));
+    }
+
     private void addShader(Shader shader)
     {
         var shaderViewModel = new ShaderViewModel(shader);
@@ -189,110 +208,6 @@ class ObjectRepositoryViewModel : ViewModelBase
             program.DetachShader(currentAttachedShader.get());
         }
         program.AttachShader(shader);
-    }
-
-    private class AddShaderCommand : ICommand
-    {
-        private readonly ObjectRepositoryViewModel repo;
-
-        private readonly ProgramStage stage;
-
-        public event EventHandler CanExecuteChanged;
-
-        public AddShaderCommand(ObjectRepositoryViewModel repo, ProgramStage stage)
-        {
-            this.repo = repo;
-            this.stage = stage;
-        }
-
-        public bool CanExecute(object parameter)
-        {
-            return true;
-        }
-
-        public void Execute(object parameter)
-        {
-            repo.addShader(new Shader(stage));
-        }
-    }
-
-    private class AddProgramCommandImpl : ICommand
-    {
-        private readonly ObjectRepositoryViewModel repo;
-
-        public event EventHandler CanExecuteChanged;
-
-        public AddProgramCommandImpl(ObjectRepositoryViewModel repo)
-        {
-            this.repo = repo;
-        }
-
-        public bool CanExecute(object parameter)
-        {
-            return true;
-        }
-
-        public void Execute(object parameter)
-        {
-            repo.addProgram();
-        }
-    }
-
-    private class RenameShaderCommandImpl : ICommand
-    {
-        private readonly ObjectRepositoryViewModel repo;
-
-        public event EventHandler CanExecuteChanged;
-
-        public RenameShaderCommandImpl(ObjectRepositoryViewModel repo)
-        {
-            this.repo = repo;
-        }
-
-        public void RaiseCanExecuteChanged()
-        {
-            CanExecuteChanged(repo, EventArgs.Empty);
-        }
-
-        public bool CanExecute(object parameter)
-        {
-            return repo.isShaderSelected();
-        }
-
-        public void Execute(object parameter)
-        {
-            if (!repo.SelectedShader.Renaming)
-            {
-                repo.SelectedShader.Renaming = true;
-            }
-        }
-    }
-
-    private class AttachSelectedShaderCommandImpl : ICommand
-    {
-        private readonly ObjectRepositoryViewModel repo;
-
-        public event EventHandler CanExecuteChanged;
-
-        public AttachSelectedShaderCommandImpl(ObjectRepositoryViewModel repo)
-        {
-            this.repo = repo;
-        }
-
-        public void RaiseCanExecuteChanged()
-        {
-            CanExecuteChanged(repo, EventArgs.Empty);
-        }
-
-        public bool CanExecute(object parameter)
-        {
-            return repo.isShaderSelected() && repo.isProgramSelected();
-        }
-
-        public void Execute(object parameter)
-        {
-            repo.attachSelectedShaderToSelectedProgram();
-        }
     }
 }
 
