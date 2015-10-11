@@ -55,6 +55,8 @@
                         </MenuItem>
                         <MenuItem Header="_Rename"
                                   Command="{Binding RenameShaderCommand}"/>
+                        <MenuItem Header="Attach To Selected _Program"
+                                  Command="{Binding AttachSelectedShaderToSelectedProgramCommand}"/>
                     </ContextMenu>
                 </ListView.ContextMenu>
                 <ListView.InputBindings>
@@ -94,8 +96,8 @@
                     <ContextMenu>
                         <MenuItem Header="Add _Program"
                                   Command="{Binding AddProgramCommand}"/>
-                        <MenuItem Header="Attach _Selected Shader"
-                                  Command="{Binding AttachSelectedShaderCommand}"/>
+                        <MenuItem Header="Attach Selected _Shader"
+                                  Command="{Binding AttachSelectedShaderToSelectedProgramCommand}"/>
                     </ContextMenu>
                 </TreeView.ContextMenu>
             </TreeView>
