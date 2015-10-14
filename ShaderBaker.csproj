@@ -90,6 +90,9 @@
     <Compile Include="View\ProgramRendererView.xaml.cs">
       <DependentUpon>ProgramRendererView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="View\ProgramTreeView.xaml.cs">
+      <DependentUpon>ProgramTreeView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="View\ProgramView.xaml.cs">
       <DependentUpon>ProgramView.xaml</DependentUpon>
     </Compile>
@@ -119,6 +122,10 @@
       <SubType>Code</SubType>
     </Compile>
     <Page Include="View\ProgramRendererView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\ProgramTreeView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

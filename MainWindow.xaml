@@ -72,36 +72,20 @@
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ListView>
-            <TreeView Grid.Row="2"
-                      Grid.Column="0"
-                      Background="#FF222222"
-                      ItemsSource="{Binding Programs}"
-                      BorderBrush="{x:Null}"
-                      DataContext="{StaticResource ObjectRepoViewModel}"
-                      SelectedItemChanged="ProgramTreeView_SelectedItemChanged">
-                <TreeView.Resources>
-                    <HierarchicalDataTemplate DataType="{x:Type vm:ProgramViewModel}"
-                                              ItemsSource="{Binding AttachedShaders}">
-                        <vw:ProgramView Padding="2"
-                                        ProgramName="{Binding ProgramName}"
-                                        ProgramLinkValidity="{Binding LinkageValidity}"/>
-                    </HierarchicalDataTemplate>
-                    <DataTemplate DataType="{x:Type vm:ShaderViewModel}">
-                        <vw:ShaderListItemView Padding="2"
-                                               ShaderName="{Binding ShaderName}"
-                                               ShaderSourceValidity="{Binding SourceValidity}"
-                                               ShaderStage="{Binding Stage}"/>
-                    </DataTemplate>
-                </TreeView.Resources>
-                <TreeView.ContextMenu>
+            <vw:ProgramTreeView Grid.Row="2"
+                                Grid.Column="0"
+                                DataContext="{StaticResource ObjectRepoViewModel}"
+                                Programs="{Binding Programs}"
+                                SelectedProgram="{Binding SelectedProgram}">
+                <vw:ProgramTreeView.ContextMenu>
                     <ContextMenu>
                         <MenuItem Header="Add _Program"
                                   Command="{Binding AddProgramCommand}"/>
                         <MenuItem Header="Attach Selected _Shader"
                                   Command="{Binding AttachSelectedShaderToSelectedProgramCommand}"/>
                     </ContextMenu>
-                </TreeView.ContextMenu>
-            </TreeView>
+                </vw:ProgramTreeView.ContextMenu>
+            </vw:ProgramTreeView>
             <vw:ProgramRendererView Grid.Row="0"
                                     Grid.Column="4"
                                     Grid.RowSpan="3"

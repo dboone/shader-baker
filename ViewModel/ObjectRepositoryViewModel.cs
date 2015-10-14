@@ -155,11 +155,6 @@ class ObjectRepositoryViewModel : ViewModelBase
         return shaderViewModelsByShader[shader];
     }
 
-    public void OnProgramTreeSelectionChanged(object selectedItem)
-    {
-        SelectedProgram = selectedItem as ProgramViewModel;
-    }
-
     public void OpenSelectedShader()
     {
         if (selectedShader == null)

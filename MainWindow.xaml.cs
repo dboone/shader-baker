@@ -21,11 +21,6 @@ public partial class MainWindow : Window
     {
        getDataContext().OpenSelectedShader();
     }
-
-    private void ProgramTreeView_SelectedItemChanged<T>(object sender, RoutedPropertyChangedEventArgs<T> e)
-    {
-       getDataContext().OnProgramTreeSelectionChanged(e.NewValue);
-    }
 }
 
 }
