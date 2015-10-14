@@ -17,7 +17,8 @@
                                       ItemsSource="{Binding AttachedShaders}">
                 <view:ProgramView Padding="2"
                                   ProgramName="{Binding ProgramName}"
-                                  ProgramLinkValidity="{Binding LinkageValidity}"/>
+                                  ProgramLinkValidity="{Binding LinkageValidity}"
+                                  Renaming="{Binding Renaming}"/>
             </HierarchicalDataTemplate>
             <DataTemplate DataType="{x:Type vm:ShaderViewModel}">
                 <view:ShaderListItemView Padding="2"

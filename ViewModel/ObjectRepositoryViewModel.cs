@@ -89,6 +89,7 @@ class ObjectRepositoryViewModel : ViewModelBase
         set
         {
             selectedProgram = value;
+            renameSelectedProgramCommand.RaiseCanExecuteChanged();
             attachSelectedShaderToSelectedProgrammCommand.RaiseCanExecuteChanged();
         }
     }
@@ -99,6 +100,15 @@ class ObjectRepositoryViewModel : ViewModelBase
         get
         {
             return renameShaderCommand;
+        }
+    }
+
+    private RelayCommand renameSelectedProgramCommand;
+    public ICommand RenameSelectedProgramCommand
+    {
+        get
+        {
+            return renameSelectedProgramCommand;
         }
     }
 
@@ -119,7 +129,7 @@ class ObjectRepositoryViewModel : ViewModelBase
         OpenShaders = new ObservableCollection<ShaderViewModel>();
         activeOpenShaderIndex = -1;
 
-        AddProgramCommand = new RelayCommand(() => addProgram());
+        AddProgramCommand = new RelayCommand(addProgram);
 
         AddVertexShaderCommand = new RelayCommand(() => addNewShader(ProgramStage.Vertex));
         AddGeometryShaderCommand = new RelayCommand(() => addNewShader(ProgramStage.Geometry));
@@ -133,8 +143,15 @@ class ObjectRepositoryViewModel : ViewModelBase
                     SelectedShader.Renaming = true;
                 }
             },
-            () => isShaderSelected());
-            
+            isShaderSelected);
+        
+        renameSelectedProgramCommand = new RelayCommand(
+            () =>
+            {
+                SelectedProgram.Renaming = true;
+            },
+            isProgramSelected);
+
         attachSelectedShaderToSelectedProgrammCommand = new RelayCommand(
             () => attachSelectedShaderToSelectedProgram(),
             () => isShaderSelected() && isProgramSelected());
