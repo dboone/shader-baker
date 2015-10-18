@@ -4,7 +4,6 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
-using System;
 
 namespace ShaderBaker.View
 {
@@ -31,7 +30,12 @@ public partial class ProgramTreeView : UserControl
     public ProgramViewModel SelectedProgram
     {
         get { return (ProgramViewModel) GetValue(SelectedProgramProperty); }
-        set { SetValue(SelectedProgramProperty, value); }
+        set
+        {
+            SetValue(SelectedProgramProperty, value);
+        
+            renameSelectedProgramCommand.RaiseCanExecuteChanged();
+        }
     }
 
     private static readonly DependencyProperty SelectedProgramProperty =
@@ -62,6 +66,23 @@ public partial class ProgramTreeView : UserControl
                 DefaultUpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
             });
 
+    public ProgramViewModel RenamingProgram
+    {
+        get { return (ProgramViewModel) GetValue(RenamingProgramProperty); }
+        set { SetValue(RenamingProgramProperty, value); }
+    }
+
+    private static readonly DependencyProperty RenamingProgramProperty =
+        DependencyProperty.Register(
+            "RenamingProgram",
+            typeof(ProgramViewModel),
+            typeof(ProgramTreeView),
+            new FrameworkPropertyMetadata
+            {
+                BindsTwoWayByDefault = true,
+                DefaultUpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
+            });
+
     public ProgramViewModel ActiveProgram
     {
         get { return (ProgramViewModel) GetValue(ActiveProgramProperty); }
@@ -79,9 +100,23 @@ public partial class ProgramTreeView : UserControl
                 DefaultUpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
             });
 
+    private readonly RelayCommand renameSelectedProgramCommand;
+    public ICommand RenameSelectedProgramCommand
+    {
+        get { return renameSelectedProgramCommand; }
+    }
+
     public ProgramTreeView()
     {
         InitializeComponent();
+
+        renameSelectedProgramCommand = new RelayCommand(
+            () => RenamingProgram = SelectedProgram, isProgramSelected);
+    }
+
+    private bool isProgramSelected()
+    {
+        return SelectedProgram != null;
     }
 
     private void TreeView_SelectedItemChanged<T>(object sender, RoutedPropertyChangedEventArgs<T> e)

@@ -4,7 +4,6 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
-using System;
 
 namespace ShaderBaker.View
 {
@@ -45,23 +44,22 @@ public partial class ProgramView : UserControl
         set { SetValue(ProgramLinkValidityProperty, value); }
     }
 
-    private static readonly DependencyProperty RenamingProperty =
+    private static readonly DependencyProperty RenamingProgramProperty =
         DependencyProperty.Register(
-            "Renaming",
-            typeof(bool),
+            "RenamingProgram",
+            typeof(ProgramViewModel),
             typeof(ProgramView),
             new FrameworkPropertyMetadata
             {
                 BindsTwoWayByDefault = true,
                 DefaultUpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged,
-                DefaultValue = false,
-                PropertyChangedCallback = (d, e) => (d as ProgramView).onRenamingChanged((bool) e.NewValue)
+                PropertyChangedCallback = (d, e) => (d as ProgramView).onRenamingProgramChanged((ProgramViewModel) e.NewValue)
             });
 
-    public bool Renaming
+    public ProgramViewModel RenamingProgram
     {
-        get { return (bool) GetValue(RenamingProperty); }
-        set { SetValue(RenamingProperty, value); }
+        get { return (ProgramViewModel) GetValue(RenamingProgramProperty); }
+        set { SetValue(RenamingProgramProperty, value); }
     }
     
     private static readonly DependencyProperty ActiveProgramProperty =
@@ -106,25 +104,31 @@ public partial class ProgramView : UserControl
         LayoutRoot.DataContext = this;
     }
 
-    private void onRenamingChanged(bool renaming)
+    private void onRenamingProgramChanged(ProgramViewModel newValue)
     {
-        if (renaming)
+        if (newValue == DataContext)
         {
-            ProgramNameTextBlock.Visibility = Visibility.Hidden;
-            ProgramNameTextBox.Text = ProgramName;
-            ProgramNameTextBox.SelectAll();
-            ProgramNameTextBox.Visibility = Visibility.Visible;
-            ProgramNameTextBox.Focus();
-        } else
+            startRenaming();
+        } else if (newValue == null)
         {
-            ProgramNameTextBox.Visibility = Visibility.Hidden;
-            ProgramNameTextBlock.Visibility = Visibility.Visible;
+            stopRenaming();
         }
+    }
+
+    private void startRenaming()
+    {
+        ProgramNameTextBlock.Visibility = Visibility.Hidden;
+        ProgramNameTextBox.Text = ProgramName;
+        ProgramNameTextBox.SelectAll();
+        ProgramNameTextBox.Visibility = Visibility.Visible;
+        ProgramNameTextBox.Focus();
     }
 
     private void stopRenaming()
     {
-        Renaming = false;
+        ProgramNameTextBox.Visibility = Visibility.Hidden;
+        ProgramNameTextBlock.Visibility = Visibility.Visible;
+        RenamingProgram = null;
     }
 
     private void confirmRename()
@@ -140,7 +144,10 @@ public partial class ProgramView : UserControl
 
     private void ProgramNameTextBox_LostKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e)
     {
-        if (Renaming)
+        // The text box can lose focus if either the user clicks away from it, or it gets hidden.
+        // The text box gets hidden either when the user confirms a rename or cancels it. This
+        // check prevents confirmRename() from being called when a rename is canceled.
+        if (RenamingProgram == DataContext)
         {
             confirmRename();
         }

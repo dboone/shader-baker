@@ -72,26 +72,27 @@
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ListView>
-            <vw:ProgramTreeView Grid.Row="2"
+            <vw:ProgramTreeView x:Name="ProgramTreeView"
+                                Grid.Row="2"
                                 Grid.Column="0"
                                 DataContext="{StaticResource ObjectRepoViewModel}"
                                 Programs="{Binding Programs}"
                                 SelectedProgram="{Binding SelectedProgram}"
                                 ActiveProgram="{Binding ActiveProgram}">
                 <vw:ProgramTreeView.ContextMenu>
-                    <ContextMenu>
+                    <ContextMenu DataContext="{Binding PlacementTarget, RelativeSource={RelativeSource Self}}">
                         <MenuItem Header="Add _Program"
-                                  Command="{Binding AddProgramCommand}"/>
+                                  Command="{Binding DataContext.AddProgramCommand}"/>
                         <MenuItem Header="_Activate"
-                                  Command="{Binding ActivateSelectedProgramCommand}"/>
+                                  Command="{Binding DataContext.ActivateSelectedProgramCommand}"/>
                         <MenuItem Header="_Rename"
                                   Command="{Binding RenameSelectedProgramCommand}"/>
                         <MenuItem Header="Attach Selected _Shader"
-                                  Command="{Binding AttachSelectedShaderToSelectedProgramCommand}"/>
+                                  Command="{Binding DataContext.AttachSelectedShaderToSelectedProgramCommand}"/>
                     </ContextMenu>
                 </vw:ProgramTreeView.ContextMenu>
                 <vw:ProgramTreeView.InputBindings>
-                    <KeyBinding Key="F2" Command="{Binding RenameSelectedProgramCommand}"/>
+                    <KeyBinding Key="F2" Command="{Binding RenameSelectedProgramCommand, ElementName=ProgramTreeView}"/>
                 </vw:ProgramTreeView.InputBindings>
             </vw:ProgramTreeView>
             <vw:ProgramRendererView Grid.Row="0"

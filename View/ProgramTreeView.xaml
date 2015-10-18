@@ -18,7 +18,7 @@
                 <view:ProgramView Padding="2"
                                   ProgramName="{Binding ProgramName}"
                                   ProgramLinkValidity="{Binding LinkageValidity}"
-                                  Renaming="{Binding Renaming}"
+                                  RenamingProgram="{Binding RenamingProgram, RelativeSource={RelativeSource AncestorType={x:Type view:ProgramTreeView}}}"
                                   ActiveProgram="{Binding ActiveProgram, RelativeSource={RelativeSource AncestorType={x:Type view:ProgramTreeView}}}"/>
             </HierarchicalDataTemplate>
             <DataTemplate DataType="{x:Type vm:ShaderViewModel}">

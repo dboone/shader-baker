@@ -35,24 +35,9 @@ public class ProgramViewModel : ViewModelBase
         get { return program.LinkError; }
     }
 
-    private bool renaming;
-    public bool Renaming
-    {
-        get
-        {
-            return renaming;
-        }
-        set
-        {
-            renaming = value;
-            OnPropertyChanged("Renaming");
-        }
-    }
-
     public ProgramViewModel()
     {
         program = new Program();
-        renaming = false;
         shadersByStage = new Dictionary<ProgramStage, ShaderViewModel>();
         AttachedShaders = new ObservableCollection<ShaderViewModel>();
     }

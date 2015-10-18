@@ -89,7 +89,6 @@ class ObjectRepositoryViewModel : ViewModelBase
         set
         {
             selectedProgram = value;
-            renameSelectedProgramCommand.RaiseCanExecuteChanged();
             attachSelectedShaderToSelectedProgramCommand.RaiseCanExecuteChanged();
             activateSelectedProgramCommand.RaiseCanExecuteChanged();
         }
@@ -115,15 +114,6 @@ class ObjectRepositoryViewModel : ViewModelBase
         get
         {
             return renameShaderCommand;
-        }
-    }
-
-    private RelayCommand renameSelectedProgramCommand;
-    public ICommand RenameSelectedProgramCommand
-    {
-        get
-        {
-            return renameSelectedProgramCommand;
         }
     }
 
@@ -168,13 +158,6 @@ class ObjectRepositoryViewModel : ViewModelBase
                 }
             },
             isShaderSelected);
-        
-        renameSelectedProgramCommand = new RelayCommand(
-            () =>
-            {
-                SelectedProgram.Renaming = true;
-            },
-            isProgramSelected);
 
         attachSelectedShaderToSelectedProgramCommand = new RelayCommand(
             () => attachSelectedShaderToSelectedProgram(),
