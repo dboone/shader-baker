@@ -1,8 +1,10 @@
 ﻿using ShaderBaker.GlRenderer;
+using ShaderBaker.ViewModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
+using System;
 
 namespace ShaderBaker.View
 {
@@ -60,6 +62,42 @@ public partial class ProgramView : UserControl
     {
         get { return (bool) GetValue(RenamingProperty); }
         set { SetValue(RenamingProperty, value); }
+    }
+    
+    private static readonly DependencyProperty ActiveProgramProperty =
+        DependencyProperty.Register(
+            "ActiveProgram",
+            typeof(ProgramViewModel),
+            typeof(ProgramView),
+            new FrameworkPropertyMetadata
+            {
+                BindsTwoWayByDefault = false,
+                DefaultUpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged,
+                PropertyChangedCallback = (d, e) => (d as ProgramView).onActiveProgramChanged((ProgramViewModel) e.NewValue)
+            });
+
+    public ProgramViewModel ActiveProgram
+    {
+        get { return (ProgramViewModel) GetValue(ActiveProgramProperty); }
+        set { SetValue(ActiveProgramProperty, value); }
+    }
+
+    private static readonly DependencyProperty IsActiveProgramProperty =
+        DependencyProperty.Register(
+            "IsActiveProgram",
+            typeof(bool),
+            typeof(ProgramView),
+            new FrameworkPropertyMetadata
+            {
+                BindsTwoWayByDefault = false,
+                DefaultUpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged,
+                DefaultValue = false
+            });
+
+    public bool IsActiveProgram
+    {
+        get { return (bool) GetValue(IsActiveProgramProperty); }
+        private set { SetValue(IsActiveProgramProperty, value); }
     }
 
     public ProgramView()
@@ -119,6 +157,11 @@ public partial class ProgramView : UserControl
             cancelRename();
             break;
         }
+    }
+
+    private void onActiveProgramChanged(ProgramViewModel newValue)
+    {
+        IsActiveProgram = newValue == DataContext;
     }
 }
 

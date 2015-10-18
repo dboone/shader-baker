@@ -13,7 +13,18 @@
                    Text="{Binding ProgramName}"
                    Foreground="{Binding ProgramLinkValidity, Converter={StaticResource ValidityToColorConverter}}"
                    Visibility="Visible"
-                   VerticalAlignment="Center"/>
+                   VerticalAlignment="Center">
+            <TextBlock.Style>
+                <Style TargetType="{x:Type TextBlock}">
+                    <Setter Property="FontWeight" Value="Normal"/>
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding IsActiveProgram}" Value="True">
+                            <Setter Property="FontWeight" Value="Bold"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </TextBlock.Style>
+        </TextBlock>
         <TextBox Name="ProgramNameTextBox"
                  Margin="2,0,0,0"
                  Focusable="True"

@@ -75,7 +75,7 @@ class ObjectRepositoryViewModel : ViewModelBase
         {
             selectedShader = value;
             renameShaderCommand.RaiseCanExecuteChanged();
-            attachSelectedShaderToSelectedProgrammCommand.RaiseCanExecuteChanged();
+            attachSelectedShaderToSelectedProgramCommand.RaiseCanExecuteChanged();
         }
     }
 
@@ -90,7 +90,22 @@ class ObjectRepositoryViewModel : ViewModelBase
         {
             selectedProgram = value;
             renameSelectedProgramCommand.RaiseCanExecuteChanged();
-            attachSelectedShaderToSelectedProgrammCommand.RaiseCanExecuteChanged();
+            attachSelectedShaderToSelectedProgramCommand.RaiseCanExecuteChanged();
+            activateSelectedProgramCommand.RaiseCanExecuteChanged();
+        }
+    }
+
+    private ProgramViewModel activeProgram;
+    public ProgramViewModel ActiveProgram
+    {
+        get
+        {
+            return activeProgram;
+        }
+        set
+        {
+            activeProgram = value;
+            OnPropertyChanged("ActiveProgram");
         }
     }
 
@@ -112,12 +127,21 @@ class ObjectRepositoryViewModel : ViewModelBase
         }
     }
 
-    private RelayCommand attachSelectedShaderToSelectedProgrammCommand;
+    private RelayCommand attachSelectedShaderToSelectedProgramCommand;
     public ICommand AttachSelectedShaderToSelectedProgramCommand
     {
         get
         {
-            return attachSelectedShaderToSelectedProgrammCommand;
+            return attachSelectedShaderToSelectedProgramCommand;
+        }
+    }
+
+    private RelayCommand activateSelectedProgramCommand;
+    public ICommand ActivateSelectedProgramCommand
+    {
+        get
+        {
+            return activateSelectedProgramCommand;
         }
     }
 
@@ -152,9 +176,13 @@ class ObjectRepositoryViewModel : ViewModelBase
             },
             isProgramSelected);
 
-        attachSelectedShaderToSelectedProgrammCommand = new RelayCommand(
+        attachSelectedShaderToSelectedProgramCommand = new RelayCommand(
             () => attachSelectedShaderToSelectedProgram(),
             () => isShaderSelected() && isProgramSelected());
+
+        activateSelectedProgramCommand = new RelayCommand(
+            () => ActiveProgram = SelectedProgram,
+            isProgramSelected);
     }
     
     private bool isShaderSelected()

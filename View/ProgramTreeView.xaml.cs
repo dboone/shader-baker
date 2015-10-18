@@ -3,6 +3,8 @@ using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
+using System.Windows.Input;
+using System;
 
 namespace ShaderBaker.View
 {
@@ -60,6 +62,23 @@ public partial class ProgramTreeView : UserControl
                 DefaultUpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
             });
 
+    public ProgramViewModel ActiveProgram
+    {
+        get { return (ProgramViewModel) GetValue(ActiveProgramProperty); }
+        set { SetValue(ActiveProgramProperty, value); }
+    }
+
+    private static readonly DependencyProperty ActiveProgramProperty =
+        DependencyProperty.Register(
+            "ActiveProgram",
+            typeof(ProgramViewModel),
+            typeof(ProgramTreeView),
+            new FrameworkPropertyMetadata
+            {
+                BindsTwoWayByDefault = true,
+                DefaultUpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
+            });
+
     public ProgramTreeView()
     {
         InitializeComponent();
@@ -70,6 +89,13 @@ public partial class ProgramTreeView : UserControl
         SelectedProgram = e.NewValue as ProgramViewModel;
         SelectedShader = e.NewValue as ShaderViewModel;
     }
-}
 
+    private void TreeView_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+    {
+        if (SelectedProgram != null)
+        {
+            ActiveProgram = SelectedProgram;
+        }
+    }
+}
 }

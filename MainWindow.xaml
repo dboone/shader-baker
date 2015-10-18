@@ -76,11 +76,14 @@
                                 Grid.Column="0"
                                 DataContext="{StaticResource ObjectRepoViewModel}"
                                 Programs="{Binding Programs}"
-                                SelectedProgram="{Binding SelectedProgram}">
+                                SelectedProgram="{Binding SelectedProgram}"
+                                ActiveProgram="{Binding ActiveProgram}">
                 <vw:ProgramTreeView.ContextMenu>
                     <ContextMenu>
                         <MenuItem Header="Add _Program"
                                   Command="{Binding AddProgramCommand}"/>
+                        <MenuItem Header="_Activate"
+                                  Command="{Binding ActivateSelectedProgramCommand}"/>
                         <MenuItem Header="_Rename"
                                   Command="{Binding RenameSelectedProgramCommand}"/>
                         <MenuItem Header="Attach Selected _Shader"
