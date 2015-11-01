@@ -115,7 +115,7 @@
                                         <ContentPresenter VerticalAlignment="Center"
                                                           HorizontalAlignment="Center"
                                                           ContentSource="Header"
-                                                          Margin="10,2"/>
+                                                          Margin="5,2"/>
                                     </Grid>
                                     <ControlTemplate.Triggers>
                                         <Trigger Property="IsSelected" Value="True">
@@ -132,10 +132,28 @@
                 </TabControl.Resources>
                 <TabControl.ItemTemplate>
                     <DataTemplate>
-                        <vw:ShaderListItemView Padding="2"
-                                               ShaderName="{Binding ShaderName}"
-                                               ShaderSourceValidity="{Binding SourceValidity}"
-                                               ShaderStage="{Binding Stage}"/>
+                        <StackPanel Orientation="Horizontal">
+                            <vw:ShaderListItemView Padding="2"
+                                                   ShaderName="{Binding ShaderName}"
+                                                   ShaderSourceValidity="{Binding SourceValidity}"
+                                                   ShaderStage="{Binding Stage}"/>
+                            <Button Click="CloseTabButton_Click"
+                                    Style="{StaticResource TransparentButtonStyle}"
+                                    VerticalAlignment="Center">
+                                <Image>
+                                    <Image.Style>
+                                        <Style TargetType="{x:Type Image}">
+                                            <Setter Property="Source" Value="{StaticResource TabCloseButton}"/>
+                                            <Style.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter Property="Source" Value="{StaticResource TabCloseButtonMouseOver}"/>
+                                                </Trigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Image.Style>
+                                </Image>
+                            </Button>
+                        </StackPanel>
                     </DataTemplate>
                 </TabControl.ItemTemplate>
                 <TabControl.ContentTemplate>

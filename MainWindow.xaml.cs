@@ -1,5 +1,6 @@
 ﻿using ShaderBaker.ViewModel;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
 using System;
 
@@ -34,6 +35,12 @@ public partial class MainWindow : Window
     private void ShaderListView_MouseDoubleClick(object sender, MouseButtonEventArgs e)
     {
        getDataContext().OpenSelectedShader();
+    }
+
+    private void CloseTabButton_Click(object sender, RoutedEventArgs e)
+    {
+        ShaderViewModel shader = (ShaderViewModel) ((Control) sender).DataContext;
+        ((ObjectRepositoryViewModel) ShaderTabTextView.DataContext).CloseShaderTab(shader);
     }
 }
 

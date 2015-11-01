@@ -10,5 +10,21 @@
                      UriSource="/ShaderBaker;component/Media/Icons/Shader/GeometryShader.png"/>
         <BitmapImage x:Key="FragmentShaderIcon"
                      UriSource="/ShaderBaker;component/Media/Icons/Shader/FragmentShader.png"/>
+        <BitmapImage x:Key="TabCloseButton"
+                     UriSource="/ShaderBaker;component/Media/Icons/TabCloseButton.png"/>
+        <BitmapImage x:Key="TabCloseButtonMouseOver"
+                     UriSource="/ShaderBaker;component/Media/Icons/TabCloseButtonMouseOver.png"/>
+        <Style x:Key="TransparentButtonStyle"
+               TargetType="{x:Type Button}">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="Transparent">
+                            <ContentPresenter/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
     </Application.Resources>
 </Application>

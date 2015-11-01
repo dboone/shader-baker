@@ -221,6 +221,11 @@ class ObjectRepositoryViewModel : ViewModelBase
         }
         program.AttachShader(shader);
     }
+
+    public void CloseShaderTab(ShaderViewModel shader)
+    {
+        OpenShaders.Remove(shader);
+    }
 }
 
 }
