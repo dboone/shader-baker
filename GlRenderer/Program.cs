@@ -32,6 +32,12 @@ public sealed class Program
         private set;
     }
     
+    public delegate void ShaderAttachedHandler(Program sender, Shader shader);
+    public event ShaderAttachedHandler ShaderAttached;
+    
+    public delegate void ShaderDetachedHandler(Program sender, Shader shader);
+    public event ShaderDetachedHandler ShaderDetached;
+    
     public delegate void LinkageValidityChangedHandler(
         Program sender, Validity oldValidity, Validity newValidity);
     public event LinkageValidityChangedHandler LinkageValidityChanged;
@@ -41,6 +47,18 @@ public sealed class Program
         Name = "Program";
         ShadersByStage = new Dictionary<ProgramStage, Shader>();
         ResetLinkageValidity();
+    }
+
+    private void raiseShaderAttached(Shader shader)
+    {
+        var handlers = ShaderAttached;
+        handlers?.Invoke(this, shader);
+    }
+
+    private void raiseShaderDetached(Shader shader)
+    {
+        var handlers = ShaderDetached;
+        handlers?.Invoke(this, shader);
     }
 
     private void raiseLinkageValidityChanged(Validity oldValidity, Validity newValidity)
@@ -57,6 +75,7 @@ public sealed class Program
                 + " stage is already attached to this program");
 
         ShadersByStage.Add(shader.Stage, shader);
+        raiseShaderAttached(shader);
         ResetLinkageValidity();
     }
 
@@ -69,6 +88,7 @@ public sealed class Program
             "No shader is attached to the "
                 + shader.Stage.ToString() + " stage of this program");
                 
+        raiseShaderDetached(shader);
         ResetLinkageValidity();
     }
 
