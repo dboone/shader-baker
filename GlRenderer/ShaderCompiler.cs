@@ -7,6 +7,22 @@ using System.Diagnostics;
 namespace ShaderBaker.GlRenderer
 {
 
+/// <summary>
+/// A class for compiling GLSL shaders through an OpenGL context.
+/// </summary>
+/// <remarks>
+/// This class has some a special threading model. It is designed to work with
+/// two threads, an Application Thread which manages the application state, and
+/// an OpenGL Thread which communicates with OpenGL. The OpenGL Thread must have
+/// a current OpenGL context. The methods AddShader, RemoveShader, and
+/// PublishValidationResults should only be called from the Application Thread.
+/// The methods ValidateShaders and ClearCache should only be called from the
+/// OpenGL thread.
+/// 
+/// This threading model is to simplify the management of OpenGL objects, such
+/// that they are used with the correct context. It also provides a simple model
+/// for exchanging information between OpenGL and the application.
+/// </remarks>
 public sealed class ShaderCompiler : IGlCache
 {
     private readonly ISet<Shader> shaders
@@ -15,8 +31,17 @@ public sealed class ShaderCompiler : IGlCache
     private readonly IDictionary<Shader, uint> glShaderCache
         = new Dictionary<Shader, uint>(new IdentityEqualityComparer<Shader>());
 
-    private IDictionary<Shader, CompileInputs> shadersToCompile
-        = new Dictionary<Shader, CompileInputs>(new IdentityEqualityComparer<Shader>());
+// The shadersToCompile and validationResults fields follow a double-buffering pattern
+// to ensure thread-safety. When an element is added to one of these collections, a
+// mutex is acquired, the element added, and then the mutex is released. When the collection
+// is operated on, the same mutex is acquired; a reference to the collection is copied to a
+// local variable; a newly-allocated, empty collection is assigned to the field; and the mutex
+// is released. This pattern minimizes thread communication and the time a mutex is held.
+//
+// These collections also store immutable values, which can be safely exchanged across threads.
+
+    private IDictionary<Shader, ValidationInputs> shadersToValidate
+        = new Dictionary<Shader, ValidationInputs>(new IdentityEqualityComparer<Shader>());
     
     private IDictionary<Shader, ValidationResult> validationResults
         = new Dictionary<Shader, ValidationResult>(new IdentityEqualityComparer<Shader>());
@@ -36,7 +61,7 @@ public sealed class ShaderCompiler : IGlCache
     {
         lock (this)
         {
-            shadersToCompile[shader] = new CompileInputs(shader.Source);
+            shadersToValidate[shader] = new ValidationInputs(shader.Source);
         }
     }
 
@@ -52,11 +77,11 @@ public sealed class ShaderCompiler : IGlCache
 
     public void ValidateShaders(OpenGL gl)
     {
-        IDictionary<Shader, CompileInputs> shadersToCompile;
+        IDictionary<Shader, ValidationInputs> localShadersToValidate;
         lock (this)
         {
-            shadersToCompile = this.shadersToCompile;
-            this.shadersToCompile = new Dictionary<Shader, CompileInputs>(shadersToCompile.Count);
+            localShadersToValidate = shadersToValidate;
+            shadersToValidate = new Dictionary<Shader, ValidationInputs>(localShadersToValidate.Count);
         }
         
         // The set of shaders to compile is traversed in two passes for superior OpenGL interoperation.
@@ -64,7 +89,7 @@ public sealed class ShaderCompiler : IGlCache
         // commands are submitted before any shader logs are queried. This increases the chance that
         // a shader has finished compiling by the time its log is read.
 
-        foreach (var pair in shadersToCompile)
+        foreach (var pair in localShadersToValidate)
         {
             var shader = pair.Key;
             var shaderSource = pair.Value.SourceToValidate;
@@ -83,7 +108,7 @@ public sealed class ShaderCompiler : IGlCache
             gl.ShaderSource(glShaderHandle, string.Empty);
         }
         
-        foreach (var pair in shadersToCompile)
+        foreach (var pair in localShadersToValidate)
         {
             var shader = pair.Key;
             var shaderSource = pair.Value.SourceToValidate;
@@ -100,14 +125,14 @@ public sealed class ShaderCompiler : IGlCache
 
     public void PublishValidationResults()
     {
-        IDictionary<Shader, ValidationResult> validationResults;
+        IDictionary<Shader, ValidationResult> localValidationResults;
         lock (this)
         {
-            validationResults = this.validationResults;
-            this.validationResults = new Dictionary<Shader, ValidationResult>(validationResults.Count);
+            localValidationResults = validationResults;
+            validationResults = new Dictionary<Shader, ValidationResult>(localValidationResults.Count);
         }
 
-        foreach (var pair in validationResults)
+        foreach (var pair in localValidationResults)
         {
             var shader = pair.Key;
             var result = pair.Value;
@@ -134,11 +159,11 @@ public sealed class ShaderCompiler : IGlCache
         glShaderCache.Clear();
     }
 
-    private struct CompileInputs
+    private struct ValidationInputs
     {
         public readonly string SourceToValidate;
         
-        public CompileInputs(string sourceToValidate)
+        public ValidationInputs(string sourceToValidate)
         {
             SourceToValidate = sourceToValidate;
         }
