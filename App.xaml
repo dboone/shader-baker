@@ -1,8 +1,9 @@
 ﻿<Application x:Class="ShaderBaker.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:local="clr-namespace:ShaderBaker">
-    <Application.Resources>       
+             xmlns:vm="clr-namespace:ShaderBaker.ViewModel">
+    <Application.Resources>
+        <vm:ObjectRepositoryViewModel x:Key="ObjectRepoViewModel"/>
         <BitmapImage x:Key="VertexShaderIcon"
                      UriSource="/ShaderBaker;component/Media/Icons/Shader/VertexShader.png"/>
         <BitmapImage x:Key="GeometryShaderIcon"

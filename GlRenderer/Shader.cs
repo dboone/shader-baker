@@ -37,6 +37,7 @@ public sealed class Shader
         set
         {
             source = value;
+            raiseSourceChanged();
             ResetSourceValidity();
         }
     }
@@ -63,35 +64,51 @@ public sealed class Shader
         Shader sender, Validity oldValidity, Validity newValidity);
     public event SourceValidityChangedHandler SourceValidityChanged;
 
+    public delegate void SourceChangedHandler(Shader sender);
+    public event SourceChangedHandler SourceChanged;
+
     public Shader(ProgramStage stage)
     {
-        Name = stage.ToString() + "Shader";
+        Name = stage + "Shader";
         Stage = stage;
         ParentPrograms = new List<Program>();
         Source = "";
     }
 
+    private void raiseSourceChanged()
+    {
+        var handlers = SourceChanged;
+        handlers?.Invoke(this);
+    }
+
+    [Conditional("DEBUG")]
     private void assertValidityUnknown()
     {
-        Debug.Assert(
-            SourceValidity == Validity.Unknown,
-            "The source validity of this Shader has already been set");
+        if (SourceValidity != Validity.Unknown)
+        {
+            Debug.Fail("The source validity of this Shader has already been set");
+        }
     }
 
     private void setSourceValidity(Validity newValidity)
     {
-        Validity oldValidity = newValidity;
-        if (oldValidity != SourceValidity)
+        var oldValidity = SourceValidity;
+        if (newValidity == oldValidity)
         {
-            SourceValidityChanged(this, oldValidity, SourceValidity);
+            return;
         }
+
+        SourceValidity = newValidity;
+        var handlers = SourceValidityChanged;
+        handlers?.Invoke(this, oldValidity, newValidity);
     }
-        
+    
     public void ResetSourceValidity()
     {
-        SourceValidity = Validity.Unknown;
         CompilationError = Option<string>.empty();
-        foreach (Program parentProgram in ParentPrograms)
+        setSourceValidity(Validity.Unknown);
+
+        foreach (var parentProgram in ParentPrograms)
         {
             parentProgram.ResetLinkageValidity();
         }
@@ -101,7 +118,8 @@ public sealed class Shader
     {
         assertValidityUnknown();
 
-        SourceValidity = Validity.Valid;
+        CompilationError = Option<string>.empty();
+        setSourceValidity(Validity.Valid);
     }
 
     public void InvalidateSource(string compilationError)
@@ -109,7 +127,7 @@ public sealed class Shader
         assertValidityUnknown();
 
         CompilationError = Option<string>.of(compilationError);
-        SourceValidity = Validity.Invalid;
+        setSourceValidity(Validity.Invalid);
     }
 }
 

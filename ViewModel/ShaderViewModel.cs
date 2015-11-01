@@ -6,7 +6,7 @@ namespace ShaderBaker.ViewModel
 
 public class ShaderViewModel : ViewModelBase
 {
-    public readonly Shader shader;
+    private readonly Shader shader;
 
     public string ShaderName
     {
@@ -21,10 +21,7 @@ public class ShaderViewModel : ViewModelBase
         }
     }
 
-    public ProgramStage Stage
-    {
-        get { return shader.Stage; }
-    }
+    public ProgramStage Stage => shader.Stage;
 
     public string Source
     {
@@ -36,15 +33,12 @@ public class ShaderViewModel : ViewModelBase
         }
     }
 
-    public Validity SourceValidity
-    {
-        get { return shader.SourceValidity; }
-    }
+    public Validity SourceValidity => shader.SourceValidity;
 
-    public Option<string> CompilationError
-    {
-        get { return shader.CompilationError; }
-    }
+    public string CompilationError =>
+        shader.CompilationError.hasValue()
+            ? shader.CompilationError.get().TrimEnd()
+            : "";
 
     private bool renaming;
     public bool Renaming

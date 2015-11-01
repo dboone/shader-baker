@@ -68,7 +68,6 @@
     <Compile Include="GlRenderer\Shader.cs" />
     <Compile Include="GlRenderer\GlContextManager.cs" />
     <Compile Include="GlRenderer\Task\GlTaskQueue.cs" />
-    <Compile Include="GlRenderer\NullShaderInputs.cs" />
     <Compile Include="GlRenderer\ShaderCompiler.cs" />
     <Compile Include="GlRenderer\Task\IGlTask.cs" />
     <Compile Include="GlRenderer\Task\SingletonGlTask.cs" />
@@ -76,17 +75,14 @@
     <Compile Include="GlUtilities\GlErrorUtilities.cs" />
     <Compile Include="GlUtilities\ShaderUtilities.cs" />
     <Compile Include="GlUtilities\ProgramUtilities.cs" />
+    <Compile Include="Utilities\IdentityEqualityComparer.cs" />
     <Compile Include="Utilities\Option.cs" />
     <Compile Include="ViewModel\ObjectRepositoryViewModel.cs" />
     <Compile Include="ViewModel\ProgramViewModel.cs" />
     <Compile Include="ViewModel\RelayCommand.cs" />
     <Compile Include="ViewModel\ShaderViewModel.cs" />
-    <Compile Include="ViewModel\ProgramRendererViewModel.cs" />
     <Compile Include="ViewModel\ViewModelBase.cs" />
     <Compile Include="View\NoConvertBackValueConverter.cs" />
-    <Compile Include="View\ProgramRendererView.xaml.cs">
-      <DependentUpon>ProgramRendererView.xaml</DependentUpon>
-    </Compile>
     <Compile Include="View\ProgramTreeView.xaml.cs">
       <DependentUpon>ProgramTreeView.xaml</DependentUpon>
     </Compile>
@@ -97,14 +93,8 @@
       <DependentUpon>ShaderListItemView.xaml</DependentUpon>
     </Compile>
     <Compile Include="View\ValidityToColorConverter.cs" />
-    <Compile Include="View\StatusMessageView.xaml.cs">
-      <DependentUpon>StatusMessageView.xaml</DependentUpon>
-    </Compile>
     <Compile Include="View\ShaderTextView.xaml.cs">
       <DependentUpon>ShaderTextView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="View\ToolbarView.xaml.cs">
-      <DependentUpon>ToolbarView.xaml</DependentUpon>
     </Compile>
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
@@ -118,10 +108,6 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Page Include="View\ProgramRendererView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
     <Page Include="View\ProgramTreeView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -134,15 +120,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="View\StatusMessageView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
     <Page Include="View\ShaderTextView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="View\ToolbarView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

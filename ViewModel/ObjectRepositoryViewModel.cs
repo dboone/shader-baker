@@ -3,24 +3,28 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Windows.Input;
+using System.Windows.Threading;
 
 namespace ShaderBaker.ViewModel
 {
 
 class ObjectRepositoryViewModel : ViewModelBase
 {
+    public GlContextManager GlContextManager
+    {
+        get;
+    }
+
     private readonly IDictionary<Shader, ShaderViewModel> shaderViewModelsByShader;
     
     public ObservableCollection<ShaderViewModel> Shaders
     {
         get;
-        private set;
     }
 
     public ObservableCollection<ShaderViewModel> OpenShaders
     {
         get;
-        private set;
     }
 
     private int activeOpenShaderIndex;
@@ -37,31 +41,26 @@ class ObjectRepositoryViewModel : ViewModelBase
     public ObservableCollection<ProgramViewModel> Programs
     {
         get;
-        private set;
     }
     
     public ICommand AddVertexShaderCommand
     {
         get;
-        private set;
     }
     
     public ICommand AddGeometryShaderCommand
     {
         get;
-        private set;
     }
     
     public ICommand AddFragmentShaderCommand
     {
         get;
-        private set;
     }
 
     public ICommand AddProgramCommand
     {
         get;
-        private set;
     }
 
     private ShaderViewModel selectedShader;
@@ -108,35 +107,19 @@ class ObjectRepositoryViewModel : ViewModelBase
         }
     }
 
-    private RelayCommand renameShaderCommand;
-    public ICommand RenameShaderCommand
-    {
-        get
-        {
-            return renameShaderCommand;
-        }
-    }
+    private readonly RelayCommand renameShaderCommand;
+    public ICommand RenameShaderCommand => renameShaderCommand;
 
-    private RelayCommand attachSelectedShaderToSelectedProgramCommand;
+    private readonly RelayCommand attachSelectedShaderToSelectedProgramCommand;
     public ICommand AttachSelectedShaderToSelectedProgramCommand
-    {
-        get
-        {
-            return attachSelectedShaderToSelectedProgramCommand;
-        }
-    }
+        => attachSelectedShaderToSelectedProgramCommand;
 
-    private RelayCommand activateSelectedProgramCommand;
-    public ICommand ActivateSelectedProgramCommand
-    {
-        get
-        {
-            return activateSelectedProgramCommand;
-        }
-    }
+    private readonly RelayCommand activateSelectedProgramCommand;
+    public ICommand ActivateSelectedProgramCommand => activateSelectedProgramCommand;
 
     public ObjectRepositoryViewModel()
     {
+        GlContextManager = new GlContextManager();
         Programs = new ObservableCollection<ProgramViewModel>();
         shaderViewModelsByShader = new Dictionary<Shader, ShaderViewModel>();
         Shaders = new ObservableCollection<ShaderViewModel>();
@@ -160,14 +143,18 @@ class ObjectRepositoryViewModel : ViewModelBase
             isShaderSelected);
 
         attachSelectedShaderToSelectedProgramCommand = new RelayCommand(
-            () => attachSelectedShaderToSelectedProgram(),
+            attachSelectedShaderToSelectedProgram,
             () => isShaderSelected() && isProgramSelected());
 
         activateSelectedProgramCommand = new RelayCommand(
             () => ActiveProgram = SelectedProgram,
             isProgramSelected);
+
+        var timer = new DispatcherTimer{Interval = TimeSpan.FromMilliseconds(250)};
+        timer.Tick += (sender, e) => GlContextManager.ShaderCompiler.PublishValidationResults();
+        timer.Start();
     }
-    
+
     private bool isShaderSelected()
     {
         return SelectedShader != null;
@@ -208,6 +195,8 @@ class ObjectRepositoryViewModel : ViewModelBase
 
     private void addShader(Shader shader)
     {
+        GlContextManager.ShaderCompiler.AddShader(shader);
+
         var shaderViewModel = new ShaderViewModel(shader);
         shaderViewModelsByShader.Add(shader, shaderViewModel);
         Shaders.Add(shaderViewModel);

@@ -1,6 +1,7 @@
 ﻿using ShaderBaker.ViewModel;
 using System.Windows;
 using System.Windows.Input;
+using System;
 
 namespace ShaderBaker
 {
@@ -14,9 +15,22 @@ public partial class MainWindow : Window
 
     private ObjectRepositoryViewModel getDataContext()
     {
-        return ShaderTabTextView.DataContext as ObjectRepositoryViewModel;
+        return (ObjectRepositoryViewModel) DataContext;
     }
 
+    protected override void OnInitialized(EventArgs e)
+    {
+        base.OnInitialized(e);
+        getDataContext().GlContextManager.Start();
+    }
+
+    protected override void OnClosed(EventArgs e)
+    {
+        base.OnClosed(e);
+
+        getDataContext().GlContextManager.Stop();
+    }
+    
     private void ShaderListView_MouseDoubleClick(object sender, MouseButtonEventArgs e)
     {
        getDataContext().OpenSelectedShader();

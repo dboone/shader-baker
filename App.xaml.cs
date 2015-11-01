@@ -1,4 +1,4 @@
-﻿using ShaderBaker.ViewModel;
+﻿using ShaderBaker.GlRenderer;
 using System.Windows;
 
 namespace ShaderBaker

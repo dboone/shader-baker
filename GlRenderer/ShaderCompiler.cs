@@ -1,239 +1,128 @@
-﻿using ShaderBaker.GlRenderer;
-using ShaderBaker.GlRenderer.Task;
-using ShaderBaker.GlUtilities;
+﻿using ShaderBaker.GlUtilities;
 using ShaderBaker.Utilities;
 using SharpGL;
+using System.Collections.Generic;
+using System.Diagnostics;
 
-namespace GlRenderer.ShaderBaker
+namespace ShaderBaker.GlRenderer
 {
 
-public class ShaderCompiler
+public sealed class ShaderCompiler
 {
-    private readonly GlContextManager glContextManager;
-    private readonly SingletonGlTask compileVertexShaderTask;
-    private readonly SingletonGlTask compileFragmentShaderTask;
-
-    private uint renderProgramHandle;
-    private uint compileProgramHandle;
-
-    private uint vertexShaderHandle;
-    private uint fragmentShaderHandle;
+    private readonly ISet<Shader> shaders
+        = new HashSet<Shader>(new IdentityEqualityComparer<Shader>());
     
-    private volatile string _vertexShaderSource;
-    public string VertexShaderSource
-    {
-        get { return _vertexShaderSource; }
-        set
-        {
-            _vertexShaderSource = value;
-            compileVertexShaderTask.Submit(
-                new CompileVertexShaderTask(
-                    new CompileShaderHelper(this, vertexShaderHandle, value)));
-        }
-    }
+    private IDictionary<Shader, CompileInputs> shadersToCompile
+        = new Dictionary<Shader, CompileInputs>(new IdentityEqualityComparer<Shader>());
     
-    private volatile string _fragmentShaderSource;
-    public string FragmentShaderSource
+    private IDictionary<Shader, ValidationResult> validationResults
+        = new Dictionary<Shader, ValidationResult>(new IdentityEqualityComparer<Shader>());
+    
+    public void AddShader(Shader shader)
     {
-        get { return _fragmentShaderSource; }
-        set
-        {
-            _fragmentShaderSource = value;
-            compileFragmentShaderTask.Submit(
-                new CompileFragmentShaderTask(
-                    new CompileShaderHelper(this, fragmentShaderHandle, value)));
-        }
-    }
+        Debug.Assert(shader != null, "shader cannot be null");
+
+        var added = shaders.Add(shader);
+        Debug.Assert(added, "Shader has already been added to this validator");
         
-    public delegate void VertexShaderCompiledEventHandler(ShaderCompiler sender, uint shaderHandle, Option<string> compileStatus);
-    public event VertexShaderCompiledEventHandler VertexShaderCompiled;
+        recompileShader(shader);
+        shader.SourceChanged += recompileShader;
+    }
 
-    public delegate void FragmentShaderCompiledEventHandler(ShaderCompiler sender, uint shaderHandle, Option<string> compileStatus);
-    public event FragmentShaderCompiledEventHandler FragmentShaderCompiled;
-
-    public delegate void ProgramLinkedEventHandler(ShaderCompiler sender, Option<string> linkStatus);
-    public event ProgramLinkedEventHandler ProgramLinked;
-
-    public ShaderCompiler(OpenGL gl, GlContextManager glContextManager)
+    private void recompileShader(Shader shader)
     {
-        this.glContextManager = glContextManager;
-        this.compileVertexShaderTask = glContextManager.CreateSingletonGlTask();
-        this.compileFragmentShaderTask = glContextManager.CreateSingletonGlTask();
+        lock (this)
+        {
+            shadersToCompile[shader] = new CompileInputs(shader.Source);
+        }
+    }
 
-        compileProgramHandle = gl.CreateProgram();
-        renderProgramHandle = gl.CreateProgram();
+    public void RemoveShader(Shader shader)
+    {
+        Debug.Assert(shader != null, "shader cannot be null");
+
+        var removed = shaders.Remove(shader);
+        Debug.Assert(removed, "Shader was never added to this validator");
         
-        vertexShaderHandle = gl.CreateShader(OpenGL.GL_VERTEX_SHADER);
-        fragmentShaderHandle = gl.CreateShader(OpenGL.GL_FRAGMENT_SHADER);
-
-        gl.AttachShader(compileProgramHandle, vertexShaderHandle);
-        gl.AttachShader(compileProgramHandle, fragmentShaderHandle);
-
-        gl.AttachShader(renderProgramHandle, vertexShaderHandle);
-        gl.AttachShader(renderProgramHandle, fragmentShaderHandle);
-
-        VertexShaderSource = 
-              "#version 330\n"
-            + "\n"
-            + "void main()\n"
-            + "{\n"
-            + "    gl_Position = vec4(0.0, 0.0, 0.0, 1.0);\n"
-            + "}\n";
-
-        FragmentShaderSource =
-             "#version 330\n"
-            + "\n"
-            + "out vec4 color;"
-            + "\n"
-            + "void main()\n"
-            + "{\n"
-            + "    color = vec4(1.0, 1.0, 1.0, 1.0);\n"
-            + "}\n";
+        shader.SourceChanged -= recompileShader;
     }
 
-    private Option<string> recompileVertexShader(OpenGL gl)
+    public void ValidateShaders(OpenGL gl)
     {
-        return recompileShader(gl, vertexShaderHandle, _vertexShaderSource);
-    }
-
-    private Option<string> recompileFragmentShader(OpenGL gl)
-    {
-        return recompileShader(gl, fragmentShaderHandle, _fragmentShaderSource);
-    }
-
-    private static Option<string> recompileShader(OpenGL gl, uint shaderHandle, string shaderSource)
-    {
-        gl.ShaderSource(shaderHandle, shaderSource);
-        gl.CompileShader(shaderHandle);
-        return ShaderUtilities.GetShaderInfoLog(gl, shaderHandle);
-    }
-
-    private static Option<string> relinkProgram(OpenGL gl, uint programHandle)
-    {
-        gl.LinkProgram(programHandle);
-
-        Option<string> linkStatus = ProgramUtilities.GetLinkStatus(gl, programHandle);
-        if (linkStatus.hasValue())
+        IDictionary<Shader, CompileInputs> shadersToCompile;
+        lock (this)
         {
-            return linkStatus;
+            shadersToCompile = this.shadersToCompile;
+            this.shadersToCompile = new Dictionary<Shader, CompileInputs>(shadersToCompile.Count);
         }
-
-        Option<string> validateStatus = ProgramUtilities.Validate(gl, programHandle);
-        if (validateStatus.hasValue())
-        {
-            return validateStatus;
-        }
-
-        return Option<string>.empty();
-    }
-
-    private void swapRenderProgram()
-    {
-        uint tmp = compileProgramHandle;
-        compileProgramHandle = renderProgramHandle;
-        renderProgramHandle = tmp;
-    }
-
-    public void UseRenderProgram(OpenGL gl)
-    {
-        gl.UseProgram(renderProgramHandle);
-    }
-
-    public void DisposeGlObjects(OpenGL gl)
-    {
-        gl.DeleteProgram(renderProgramHandle);
-        gl.DeleteProgram(compileProgramHandle);
-        gl.DeleteProgram(vertexShaderHandle);
-        gl.DeleteProgram(fragmentShaderHandle);
         
-        renderProgramHandle = 0;
-        compileProgramHandle = 0;
-        vertexShaderHandle = 0;
-        fragmentShaderHandle = 0;
-    }
-
-    private class CompileShaderHelper
-    {
-        public readonly ShaderCompiler shaderCompiler;
-
-        public readonly uint shaderHandle;
-
-        public readonly string shaderSource;
-
-        public CompileShaderHelper(
-            ShaderCompiler shaderCompiler, uint shaderHandle, string shaderSource)
+        foreach (var pair in shadersToCompile)
         {
-            this.shaderCompiler = shaderCompiler;
-            this.shaderHandle = shaderHandle;
-            this.shaderSource = shaderSource;
-        }
-
-        public Option<string> Execute(OpenGL gl)
-        {
-            Option<string> compileStatus = recompileShader(gl, shaderHandle, shaderSource);
-            if (!compileStatus.hasValue())
+            var shader = pair.Key;
+            var shaderSource = pair.Value.SourceToValidate;
+            var glShaderHandle = gl.CreateShader(shader.Stage.GlEnumValue());
+            gl.ShaderSource(glShaderHandle, shaderSource);
+            gl.CompileShader(glShaderHandle);
+            var compileError = ShaderUtilities.GetShaderInfoLog(gl, glShaderHandle);
+            lock (this)
             {
-                shaderCompiler.glContextManager.SubmitGlTask(new LinkProgramTask(shaderCompiler));
+                validationResults[shader]
+                    = new ValidationResult(shaderSource, compileError);
             }
-            return compileStatus;
+
+            gl.DeleteShader(glShaderHandle);
         }
     }
 
-    private class CompileVertexShaderTask : IGlTask
+    public void PublishValidationResults()
     {
-        private readonly CompileShaderHelper helper;
-
-        public CompileVertexShaderTask(CompileShaderHelper helper)
+        IDictionary<Shader, ValidationResult> validationResults;
+        lock (this)
         {
-            this.helper = helper;
+            validationResults = this.validationResults;
+            this.validationResults = new Dictionary<Shader, ValidationResult>(validationResults.Count);
         }
 
-        public void Execute(OpenGL gl)
+        foreach (var pair in validationResults)
         {
-            Option<string> compileStatus = helper.Execute(gl);
-            helper.shaderCompiler.VertexShaderCompiled(
-                helper.shaderCompiler,
-                helper.shaderHandle,
-                compileStatus);
-        }
-    }
-
-    private class CompileFragmentShaderTask : IGlTask
-    {
-        private readonly CompileShaderHelper helper;
-
-        public CompileFragmentShaderTask(CompileShaderHelper helper)
-        {
-            this.helper = helper;
-        }
-
-        public void Execute(OpenGL gl)
-        {
-            Option<string> compileStatus = helper.Execute(gl);
-            helper.shaderCompiler.FragmentShaderCompiled(
-                helper.shaderCompiler,
-                helper.shaderHandle,
-                compileStatus);
-        }
-    }
-
-    private class LinkProgramTask : IGlTask
-    {
-        private readonly ShaderCompiler shaderCompiler;
-
-        public LinkProgramTask(ShaderCompiler shaderCompiler)
-        {
-            this.shaderCompiler = shaderCompiler;
-        }
-
-        public void Execute(OpenGL gl)
-        {
-            Option<string> linkStatus = relinkProgram(gl, shaderCompiler.compileProgramHandle);
-            if (!linkStatus.hasValue())
+            var shader = pair.Key;
+            var result = pair.Value;
+            if (result.ValidatedSource == shader.Source)
             {
-                shaderCompiler.swapRenderProgram();
+                var error = result.ValidationError;
+                if (error.hasValue())
+                {
+                    shader.InvalidateSource(error.get());
+                } else
+                {
+                    shader.ValidateSource();
+                }
             }
-            shaderCompiler.ProgramLinked(shaderCompiler, linkStatus);
+        }
+    }
+
+    private struct CompileInputs
+    {
+        public readonly string SourceToValidate;
+        
+        public CompileInputs(string sourceToValidate)
+        {
+            SourceToValidate = sourceToValidate;
+        }
+    }
+
+    private struct ValidationResult
+    {
+        public readonly string ValidatedSource;
+
+        public readonly Option<string> ValidationError;
+
+        public ValidationResult(
+            string validatedSource,
+            Option<string> validationError)
+        {
+            ValidatedSource = validatedSource;
+            ValidationError = validationError;
         }
     }
 }
