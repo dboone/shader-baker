@@ -10,22 +10,13 @@ public sealed class Shader
     /// <summary>
     /// The name of the shader
     /// </summary>
-    public string Name
-    {
-        get;
-        set;
-    }
+    public string Name { get; set; }
 
     /// <summary>
     /// The shader's stage in the program pipeline
     /// </summary>
-    public readonly ProgramStage Stage;
-
-    /// <summary>
-    /// The programs to which this Shader is attached
-    /// </summary>
-    public readonly ICollection<Program> ParentPrograms;
-
+    public ProgramStage Stage { get; }
+    
     private string source;
 
     /// <summary>
@@ -71,7 +62,6 @@ public sealed class Shader
     {
         Name = stage + "Shader";
         Stage = stage;
-        ParentPrograms = new List<Program>();
         Source = "";
     }
 
@@ -107,11 +97,6 @@ public sealed class Shader
     {
         CompilationError = Option<string>.empty();
         setSourceValidity(Validity.Unknown);
-
-        foreach (var parentProgram in ParentPrograms)
-        {
-            parentProgram.ResetLinkageValidity();
-        }
     }
 
     public void ValidateSource()

@@ -7,16 +7,12 @@ namespace ShaderBaker.GlRenderer
 
 public sealed class Program
 {
-    public string Name
-    {
-        get;
-        set;
-    }
+    public string Name { get; set; }
 
     /// <summary>
     /// The shaders attached to this Program, keyed by their ProgramPipelineStage
     /// </summary>
-    public readonly IDictionary<ProgramStage, Shader> ShadersByStage;
+    public IDictionary<ProgramStage, Shader> ShadersByStage { get; }
     
     /// <summary>
     /// The validity of the program. This represents its link status.
@@ -47,39 +43,32 @@ public sealed class Program
         ResetLinkageValidity();
     }
 
+    private void raiseLinkageValidityChanged(Validity oldValidity, Validity newValidity)
+    {
+        var handlers = LinkageValidityChanged;
+        handlers?.Invoke(this, oldValidity, newValidity);
+    }
+
     public void AttachShader(Shader shader)
     {
         Debug.Assert(
             !ShadersByStage.ContainsKey(shader.Stage),
             "A shader for the " + shader.Stage.ToString()
                 + " stage is already attached to this program");
-        Debug.Assert(
-            !shader.ParentPrograms.Contains(this),
-            "This program is already parented to the shader to be attached");
 
         ShadersByStage.Add(shader.Stage, shader);
-        shader.ParentPrograms.Add(this);
         ResetLinkageValidity();
     }
 
     public void DetachShader(Shader shader)
     {
-        {
-            bool removed = ShadersByStage.Remove(
-                new KeyValuePair<ProgramStage, Shader>(shader.Stage, shader));
-            Debug.Assert(
-                removed,
-                "No shader is attached to the "
-                    + shader.Stage.ToString() + " stage of this program");
-        }
-
-        {
-            bool removed = shader.ParentPrograms.Remove(this);
-            Debug.Assert(
-                removed,
-                "A shader attached to this program did not have the program parented to it");
-        }
-
+        bool removed = ShadersByStage.Remove(
+            new KeyValuePair<ProgramStage, Shader>(shader.Stage, shader));
+        Debug.Assert(
+            removed,
+            "No shader is attached to the "
+                + shader.Stage.ToString() + " stage of this program");
+                
         ResetLinkageValidity();
     }
 
@@ -96,11 +85,7 @@ public sealed class Program
         if (oldValidity != LinkageValidity)
         {
             LinkageValidity = newValidity;
-            var events = LinkageValidityChanged;
-            if (events != null)
-            {
-                events(this, oldValidity, LinkageValidity);
-            }
+            raiseLinkageValidityChanged(oldValidity, newValidity);
         }
     }
 
