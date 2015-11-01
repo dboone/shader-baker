@@ -7,9 +7,8 @@ namespace ShaderBaker.GlRenderer
 {
 
 /// <summary>
-/// Manages an OpenGL context on a dedicated thread. This
-/// guarantees that all OpenGL calls are executed on the
-/// same thread.
+/// Manages an OpenGL context on a dedicated thread. This helps guarantee
+/// that all OpenGL calls are executed on the same thread.
 /// </summary>
 public sealed class GlContextManager
 {
@@ -46,6 +45,8 @@ public sealed class GlContextManager
         {
             ShaderCompiler.ValidateShaders(gl);
         }
+
+        clearCachedGlObjects(gl);
     }
         
     public void Stop()
@@ -53,9 +54,16 @@ public sealed class GlContextManager
         cancelTokenSource.Cancel();
         cancelTokenSource.Dispose();
     }
-
-    private static bool createRenderContext(OpenGL gl, int width, int height)
+    
+    private void clearCachedGlObjects(OpenGL gl)
     {
+        ShaderCompiler.ClearCache(gl);
+    }
+
+    private bool createRenderContext(OpenGL gl, int width, int height)
+    {
+        clearCachedGlObjects(gl);
+
         return gl.Create(
             OpenGLVersion.OpenGL3_3,
             RenderContextType.FBO,

@@ -7,17 +7,20 @@ using System.Diagnostics;
 namespace ShaderBaker.GlRenderer
 {
 
-public sealed class ShaderCompiler
+public sealed class ShaderCompiler : IGlCache
 {
     private readonly ISet<Shader> shaders
         = new HashSet<Shader>(new IdentityEqualityComparer<Shader>());
-    
+
+    private readonly IDictionary<Shader, uint> glShaderCache
+        = new Dictionary<Shader, uint>(new IdentityEqualityComparer<Shader>());
+
     private IDictionary<Shader, CompileInputs> shadersToCompile
         = new Dictionary<Shader, CompileInputs>(new IdentityEqualityComparer<Shader>());
     
     private IDictionary<Shader, ValidationResult> validationResults
         = new Dictionary<Shader, ValidationResult>(new IdentityEqualityComparer<Shader>());
-    
+
     public void AddShader(Shader shader)
     {
         Debug.Assert(shader != null, "shader cannot be null");
@@ -56,21 +59,42 @@ public sealed class ShaderCompiler
             this.shadersToCompile = new Dictionary<Shader, CompileInputs>(shadersToCompile.Count);
         }
         
+        // The set of shaders to compile is traversed in two passes for superior OpenGL interoperation.
+        // Since getting the shader info log requires waiting for the compile to finish, all compilation
+        // commands are submitted before any shader logs are queried. This increases the chance that
+        // a shader has finished compiling by the time its log is read.
+
         foreach (var pair in shadersToCompile)
         {
             var shader = pair.Key;
             var shaderSource = pair.Value.SourceToValidate;
-            var glShaderHandle = gl.CreateShader(shader.Stage.GlEnumValue());
+
+            uint glShaderHandle;
+            if (!glShaderCache.TryGetValue(shader, out glShaderHandle))
+            {
+                glShaderHandle = gl.CreateShader(shader.Stage.GlEnumValue());
+                glShaderCache.Add(shader, glShaderHandle);
+            }
+            
             gl.ShaderSource(glShaderHandle, shaderSource);
             gl.CompileShader(glShaderHandle);
+            // after a GLSL shader is compiled, OpenGL does not need to keep the source
+            // any more, so set it to an empty string to free up memory in the driver
+            gl.ShaderSource(glShaderHandle, string.Empty);
+        }
+        
+        foreach (var pair in shadersToCompile)
+        {
+            var shader = pair.Key;
+            var shaderSource = pair.Value.SourceToValidate;
+
+            uint glShaderHandle = glShaderCache[shader];
             var compileError = ShaderUtilities.GetShaderInfoLog(gl, glShaderHandle);
             lock (this)
             {
                 validationResults[shader]
                     = new ValidationResult(shaderSource, compileError);
             }
-
-            gl.DeleteShader(glShaderHandle);
         }
     }
 
@@ -99,6 +123,15 @@ public sealed class ShaderCompiler
                 }
             }
         }
+    }
+
+    public void ClearCache(OpenGL gl)
+    {
+        foreach (var glShaderHandle in glShaderCache.Values)
+        {
+            gl.DeleteShader(glShaderHandle);
+        }
+        glShaderCache.Clear();
     }
 
     private struct CompileInputs

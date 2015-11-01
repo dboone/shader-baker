@@ -63,6 +63,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="GlRenderer\IGlCache.cs" />
     <Compile Include="GlRenderer\Program.cs" />
     <Compile Include="GlRenderer\ProgramStage.cs" />
     <Compile Include="GlRenderer\Shader.cs" />
