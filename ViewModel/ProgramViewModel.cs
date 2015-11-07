@@ -14,32 +14,30 @@ public class ProgramViewModel : ViewModelBase
     public string ProgramName
     {
         get { return program.Name; }
-        set { program.Name = value; }
+        set
+        {
+            program.Name = value;
+            OnPropertyChanged("ProgramName");
+        }
     }
     
     private readonly IDictionary<ProgramStage, ShaderViewModel> shadersByStage;
     
-    public ObservableCollection<ShaderViewModel> AttachedShaders
-    {
-        get;
-        private set;
-    }
+    public ObservableCollection<ShaderViewModel> AttachedShaders { get; }
     
-    public Validity LinkageValidity
-    {
-        get { return program.LinkageValidity; }
-    }
+    public Validity LinkageValidity => program.LinkageValidity;
+    
+    public string LinkError =>
+        program.LinkError.hasValue()
+            ? program.LinkError.get().TrimEnd()
+            : "";
 
-    public Option<string> LinkError
+    public ProgramViewModel(Program program)
     {
-        get { return program.LinkError; }
-    }
-
-    public ProgramViewModel()
-    {
-        program = new Program();
+        this.program = program;
         shadersByStage = new Dictionary<ProgramStage, ShaderViewModel>();
         AttachedShaders = new ObservableCollection<ShaderViewModel>();
+        program.LinkageValidityChanged += onLinkageValidityChanged;
     }
 
     public Option<ShaderViewModel> GetShaderForStage(ProgramStage stage)

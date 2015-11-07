@@ -10,22 +10,13 @@ namespace ShaderBaker.ViewModel
 
 class ObjectRepositoryViewModel : ViewModelBase
 {
-    public GlContextManager GlContextManager
-    {
-        get;
-    }
+    public GlContextManager GlContextManager { get; }
 
     private readonly IDictionary<Shader, ShaderViewModel> shaderViewModelsByShader;
     
-    public ObservableCollection<ShaderViewModel> Shaders
-    {
-        get;
-    }
+    public ObservableCollection<ShaderViewModel> Shaders { get; }
 
-    public ObservableCollection<ShaderViewModel> OpenShaders
-    {
-        get;
-    }
+    public ObservableCollection<ShaderViewModel> OpenShaders { get; }
 
     private int activeOpenShaderIndex;
     public int ActiveOpenShaderIndex
@@ -38,38 +29,20 @@ class ObjectRepositoryViewModel : ViewModelBase
         }
     }
 
-    public ObservableCollection<ProgramViewModel> Programs
-    {
-        get;
-    }
+    public ObservableCollection<ProgramViewModel> Programs { get; }
     
-    public ICommand AddVertexShaderCommand
-    {
-        get;
-    }
+    public ICommand AddVertexShaderCommand { get; }
     
-    public ICommand AddGeometryShaderCommand
-    {
-        get;
-    }
+    public ICommand AddGeometryShaderCommand {  get; }
     
-    public ICommand AddFragmentShaderCommand
-    {
-        get;
-    }
+    public ICommand AddFragmentShaderCommand { get; }
 
-    public ICommand AddProgramCommand
-    {
-        get;
-    }
+    public ICommand AddProgramCommand { get; }
 
     private ShaderViewModel selectedShader;
     public ShaderViewModel SelectedShader
     {
-        get
-        {
-            return selectedShader;
-        }
+        get { return selectedShader; }
         set
         {
             selectedShader = value;
@@ -81,10 +54,7 @@ class ObjectRepositoryViewModel : ViewModelBase
     private ProgramViewModel selectedProgram;
     public ProgramViewModel SelectedProgram
     {
-        get
-        {
-            return selectedProgram;
-        }
+        get { return selectedProgram; }
         set
         {
             selectedProgram = value;
@@ -96,10 +66,7 @@ class ObjectRepositoryViewModel : ViewModelBase
     private ProgramViewModel activeProgram;
     public ProgramViewModel ActiveProgram
     {
-        get
-        {
-            return activeProgram;
-        }
+        get { return activeProgram; }
         set
         {
             activeProgram = value;
@@ -204,7 +171,10 @@ class ObjectRepositoryViewModel : ViewModelBase
     
     private void addProgram()
     {
-        Programs.Add(new ProgramViewModel());
+        var program = new Program();
+        GlContextManager.ShaderCompiler.AddProgram(program);
+
+        Programs.Add(new ProgramViewModel(program));
     }
 
     private void attachSelectedShaderToSelectedProgram()

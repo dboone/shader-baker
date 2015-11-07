@@ -165,65 +165,115 @@
             <GridSplitter Grid.Row="1"
                           HorizontalAlignment="Stretch"
                           ResizeBehavior="PreviousAndNext"/>
-            <ScrollViewer Grid.Row="2"
-                          HorizontalScrollBarVisibility="Auto"
-                          VerticalScrollBarVisibility="Auto">
-                <ItemsControl Background="#FF222222"
-                              BorderBrush="{x:Null}"
-                              ItemsSource="{Binding Shaders}"
-                              Padding="5,5,5,5">
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate>
-                            <StackPanel Orientation="Horizontal"
-                                        Margin="0,0,0,5">
-                                <Image Height="16"
-                                       VerticalAlignment="Top"
-                                       RenderOptions.BitmapScalingMode="Fant">
-                                    <Image.Style>
-                                        <Style TargetType="{x:Type Image}">
-                                            <Style.Triggers>
-                                                <DataTrigger Binding="{Binding Stage}" Value="Vertex">
-                                                    <Setter Property="Source" Value="{StaticResource VertexShaderIcon}"/>
-                                                </DataTrigger>
-                                                <DataTrigger Binding="{Binding Stage}" Value="Geometry">
-                                                    <Setter Property="Source" Value="{StaticResource GeometryShaderIcon}"/>
-                                                </DataTrigger>
-                                                <DataTrigger Binding="{Binding Stage}" Value="Fragment">
-                                                    <Setter Property="Source" Value="{StaticResource FragmentShaderIcon}"/>
-                                                </DataTrigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </Image.Style>
-                                </Image>
-                                <TextBlock Foreground="#FFEEEEEE"
-                                           Background="#FF222222"
-                                           Text="{Binding ShaderName}"
-                                           Padding="5,0,5,0"/>
-                                <TextBlock Background="#FF222222">
-                                    <TextBlock.Style>
-                                        <Style TargetType="{x:Type TextBlock}">
-                                            <Style.Triggers>
-                                                <DataTrigger Binding="{Binding SourceValidity}" Value="Valid">
-                                                    <Setter Property="Foreground" Value="Green"/>
-                                                    <Setter Property="Text" Value="OK"/>
-                                                </DataTrigger>
-                                                <DataTrigger Binding="{Binding SourceValidity}" Value="Invalid">
-                                                    <Setter Property="Foreground" Value="Red"/>
-                                                    <Setter Property="Text" Value="{Binding CompilationError}"/>
-                                                </DataTrigger>
-                                                <DataTrigger Binding="{Binding SourceValidity}" Value="Unknown">
-                                                    <Setter Property="Foreground" Value="Yellow"/>
-                                                    <Setter Property="Text" Value="Working..."/>
-                                                </DataTrigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </TextBlock.Style>
-                                </TextBlock>
-                            </StackPanel>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
-            </ScrollViewer>
+            <Grid Grid.Row="2">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="5"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <ScrollViewer Grid.Column="0"
+                              HorizontalScrollBarVisibility="Auto"
+                              VerticalScrollBarVisibility="Auto">
+                    <ItemsControl Background="#FF222222"
+                                  BorderBrush="{x:Null}"
+                                  ItemsSource="{Binding Shaders}"
+                                  Padding="5,5,5,5">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal"
+                                            Margin="0,0,0,5">
+                                    <Image Height="16"
+                                           VerticalAlignment="Top"
+                                           RenderOptions.BitmapScalingMode="Fant">
+                                        <Image.Style>
+                                            <Style TargetType="{x:Type Image}">
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding Stage}" Value="Vertex">
+                                                        <Setter Property="Source" Value="{StaticResource VertexShaderIcon}"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding Stage}" Value="Geometry">
+                                                        <Setter Property="Source" Value="{StaticResource GeometryShaderIcon}"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding Stage}" Value="Fragment">
+                                                        <Setter Property="Source" Value="{StaticResource FragmentShaderIcon}"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Image.Style>
+                                    </Image>
+                                    <TextBlock Foreground="#FFEEEEEE"
+                                               Background="#FF222222"
+                                               Text="{Binding ShaderName}"
+                                               Padding="5,0,5,0"/>
+                                    <TextBlock Background="#FF222222">
+                                        <TextBlock.Style>
+                                            <Style TargetType="{x:Type TextBlock}">
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding SourceValidity}" Value="Valid">
+                                                        <Setter Property="Foreground" Value="Green"/>
+                                                        <Setter Property="Text" Value="OK"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding SourceValidity}" Value="Invalid">
+                                                        <Setter Property="Foreground" Value="Red"/>
+                                                        <Setter Property="Text" Value="{Binding CompilationError}"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding SourceValidity}" Value="Unknown">
+                                                        <Setter Property="Foreground" Value="Yellow"/>
+                                                        <Setter Property="Text" Value="Working..."/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+                <GridSplitter Grid.Column="1"
+                              HorizontalAlignment="Stretch"
+                              ResizeBehavior="PreviousAndNext"/>
+                <ScrollViewer Grid.Column="2"
+                              HorizontalScrollBarVisibility="Auto"
+                              VerticalScrollBarVisibility="Auto">
+                    <ItemsControl Background="#FF222222"
+                                  BorderBrush="{x:Null}"
+                                  ItemsSource="{Binding Programs}"
+                                  Padding="5,5,5,5">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal"
+                                            Margin="0,0,0,5">
+                                    <TextBlock Foreground="#FFEEEEEE"
+                                               Background="#FF222222"
+                                               Text="{Binding ProgramName}"
+                                               Padding="0,0,5,0"/>
+                                    <TextBlock Background="#FF222222">
+                                        <TextBlock.Style>
+                                            <Style TargetType="{x:Type TextBlock}">
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding LinkageValidity}" Value="Valid">
+                                                        <Setter Property="Foreground" Value="Green"/>
+                                                        <Setter Property="Text" Value="OK"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding LinkageValidity}" Value="Invalid">
+                                                        <Setter Property="Foreground" Value="Red"/>
+                                                        <Setter Property="Text" Value="{Binding LinkError}"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding LinkageValidity}" Value="Unknown">
+                                                        <Setter Property="Foreground" Value="Yellow"/>
+                                                        <Setter Property="Text" Value="Working..."/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </Grid>
         </Grid>
     </Grid>
 </Window>

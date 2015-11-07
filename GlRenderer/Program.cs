@@ -1,5 +1,6 @@
 ﻿using ShaderBaker.Utilities;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 
 namespace ShaderBaker.GlRenderer
@@ -9,10 +10,12 @@ public sealed class Program
 {
     public string Name { get; set; }
 
+    private IDictionary<ProgramStage, Shader> shadersByStage;
+
     /// <summary>
     /// The shaders attached to this Program, keyed by their ProgramPipelineStage
     /// </summary>
-    public IDictionary<ProgramStage, Shader> ShadersByStage { get; }
+    public IReadOnlyDictionary<ProgramStage, Shader> ShadersByStage { get; }
     
     /// <summary>
     /// The validity of the program. This represents its link status.
@@ -45,7 +48,8 @@ public sealed class Program
     public Program()
     {
         Name = "Program";
-        ShadersByStage = new Dictionary<ProgramStage, Shader>();
+        shadersByStage = new Dictionary<ProgramStage, Shader>();
+        ShadersByStage = new ReadOnlyDictionary<ProgramStage, Shader>(shadersByStage);
         ResetLinkageValidity();
     }
 
@@ -60,11 +64,11 @@ public sealed class Program
         var handlers = ShaderDetached;
         handlers?.Invoke(this, shader);
     }
-
-    private void raiseLinkageValidityChanged(Validity oldValidity, Validity newValidity)
+    
+    private void onAttachedShaderSourceValidityChanged(
+        Shader sender, Validity oldValidity, Validity newValidity)
     {
-        var handlers = LinkageValidityChanged;
-        handlers?.Invoke(this, oldValidity, newValidity);
+        ResetLinkageValidity();
     }
 
     public void AttachShader(Shader shader)
@@ -73,21 +77,23 @@ public sealed class Program
             !ShadersByStage.ContainsKey(shader.Stage),
             "A shader for the " + shader.Stage.ToString()
                 + " stage is already attached to this program");
-
-        ShadersByStage.Add(shader.Stage, shader);
+                
+        shadersByStage.Add(shader.Stage, shader);
+            shader.SourceValidityChanged += onAttachedShaderSourceValidityChanged;
         raiseShaderAttached(shader);
         ResetLinkageValidity();
     }
 
     public void DetachShader(Shader shader)
     {
-        bool removed = ShadersByStage.Remove(
+        bool removed = shadersByStage.Remove(
             new KeyValuePair<ProgramStage, Shader>(shader.Stage, shader));
         Debug.Assert(
             removed,
             "No shader is attached to the "
                 + shader.Stage.ToString() + " stage of this program");
                 
+        shader.SourceValidityChanged -= onAttachedShaderSourceValidityChanged;
         raiseShaderDetached(shader);
         ResetLinkageValidity();
     }
@@ -101,18 +107,20 @@ public sealed class Program
 
     private void setLinkageValidity(Validity newValidity)
     {
-        Validity oldValidity = newValidity;
-        if (oldValidity != LinkageValidity)
+        var oldValidity = LinkageValidity;
+        if (newValidity == oldValidity)
         {
-            LinkageValidity = newValidity;
-            raiseLinkageValidityChanged(oldValidity, newValidity);
+            return;
         }
+
+        LinkageValidity = newValidity;
+        var handlers = LinkageValidityChanged;
+        handlers?.Invoke(this, oldValidity, newValidity);
     }
 
     public void ResetLinkageValidity()
     {
         LinkError = Option<string>.empty();
-        
         setLinkageValidity(Validity.Unknown);
     }
 
@@ -120,6 +128,7 @@ public sealed class Program
     {
         assertValidityUnknown();
         
+        LinkError = Option<string>.empty();
         setLinkageValidity(Validity.Valid);
     }
 
@@ -128,7 +137,7 @@ public sealed class Program
         assertValidityUnknown();
 
         LinkError = Option<string>.of(linkError);
-        setLinkageValidity(Validity.Unknown);
+        setLinkageValidity(Validity.Invalid);
     }
 }
 
