@@ -28,8 +28,8 @@ public class ProgramViewModel : ViewModelBase
     public Validity LinkageValidity => program.LinkageValidity;
     
     public string LinkError =>
-        program.LinkError.hasValue()
-            ? program.LinkError.get().TrimEnd()
+        program.LinkError.IsSome
+            ? program.LinkError.Value.TrimEnd()
             : "";
 
     public ProgramViewModel(Program program)
@@ -45,10 +45,10 @@ public class ProgramViewModel : ViewModelBase
         ShaderViewModel shader;
         if (shadersByStage.TryGetValue(stage, out shader))
         {
-            return Option<ShaderViewModel>.of(shader);
+            return Option<ShaderViewModel>.Some(shader);
         } else
         {
-            return Option<ShaderViewModel>.empty();
+            return Option<ShaderViewModel>.None();
         }
     }
 

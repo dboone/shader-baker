@@ -120,7 +120,7 @@ public sealed class Program
 
     public void ResetLinkageValidity()
     {
-        LinkError = Option<string>.empty();
+        LinkError = Option<string>.None();
         setLinkageValidity(Validity.Unknown);
     }
 
@@ -128,7 +128,7 @@ public sealed class Program
     {
         assertValidityUnknown();
         
-        LinkError = Option<string>.empty();
+        LinkError = Option<string>.None();
         setLinkageValidity(Validity.Valid);
     }
 
@@ -136,7 +136,7 @@ public sealed class Program
     {
         assertValidityUnknown();
 
-        LinkError = Option<string>.of(linkError);
+        LinkError = Option<string>.Some(linkError);
         setLinkageValidity(Validity.Invalid);
     }
 }

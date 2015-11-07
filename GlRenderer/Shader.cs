@@ -94,7 +94,7 @@ public sealed class Shader
     
     public void ResetSourceValidity()
     {
-        CompilationError = Option<string>.empty();
+        CompilationError = Option<string>.None();
         setSourceValidity(Validity.Unknown);
     }
 
@@ -102,7 +102,7 @@ public sealed class Shader
     {
         assertValidityUnknown();
 
-        CompilationError = Option<string>.empty();
+        CompilationError = Option<string>.None();
         setSourceValidity(Validity.Valid);
     }
 
@@ -110,7 +110,7 @@ public sealed class Shader
     {
         assertValidityUnknown();
 
-        CompilationError = Option<string>.of(compilationError);
+        CompilationError = Option<string>.Some(compilationError);
         setSourceValidity(Validity.Invalid);
     }
 }

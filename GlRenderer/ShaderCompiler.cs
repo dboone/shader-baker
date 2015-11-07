@@ -224,7 +224,7 @@ public sealed class ShaderCompiler : IGlCache
             if (shaderData.Validity == Validity.Unknown)
             {
                 var compileError = ShaderUtilities.GetShaderInfoLog(gl, shaderData.ShaderHandle);
-                shaderData.Validity = compileError.hasValue() ? Validity.Invalid : Validity.Valid;
+                shaderData.Validity = compileError.IsSome ? Validity.Invalid : Validity.Valid;
                 
                 if (localShadersToValidate.ContainsKey(shader))
                 {
@@ -292,7 +292,7 @@ public sealed class ShaderCompiler : IGlCache
             string attachedProgramErrors;
             if (invalidPrograms.TryGetValue(program, out attachedProgramErrors))
             {
-                linkError = Option<string>.of(attachedProgramErrors);
+                linkError = Option<string>.Some(attachedProgramErrors);
             } else
             {
 
@@ -328,9 +328,9 @@ public sealed class ShaderCompiler : IGlCache
             if (result.ValidatedSource == shader.Source)
             {
                 var error = result.ValidationError;
-                if (error.hasValue())
+                if (error.IsSome)
                 {
-                    shader.InvalidateSource(error.get());
+                    shader.InvalidateSource(error.Value);
                 } else
                 {
                     shader.ValidateSource();
@@ -344,9 +344,9 @@ public sealed class ShaderCompiler : IGlCache
             var result = pair.Value;
             
             var error = result.ValidationError;
-            if (error.hasValue())
+            if (error.IsSome)
             {
-                program.InvalidateProgramLinkage(error.get());
+                program.InvalidateProgramLinkage(error.Value);
             } else
             {
                 program.ValidateProgramLinkage();

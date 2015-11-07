@@ -15,10 +15,10 @@ public static class ProgramUtilities
         if (status[0] == OpenGL.GL_FALSE)
         {
             string log = getProgramInfoLog(gl, programHandle);
-            return Option<string>.of(log);
+            return Option<string>.Some(log);
         } else
         {
-            return Option<string>.empty();
+            return Option<string>.None();
         }
     }
 
@@ -31,10 +31,10 @@ public static class ProgramUtilities
         if (status[0] == OpenGL.GL_FALSE)
         {
             string log = getProgramInfoLog(gl, programHandle);
-            return Option<string>.of(log);
+            return Option<string>.Some(log);
         } else
         {
-            return Option<string>.empty();
+            return Option<string>.None();
         }
     }
         

@@ -185,9 +185,9 @@ class ObjectRepositoryViewModel : ViewModelBase
     private static void attachShaderToProgram(ProgramViewModel program, ShaderViewModel shader)
     {
         var currentAttachedShader = program.GetShaderForStage(shader.Stage);
-        if (currentAttachedShader.hasValue())
+        if (currentAttachedShader.IsSome)
         {
-            program.DetachShader(currentAttachedShader.get());
+            program.DetachShader(currentAttachedShader.Value);
         }
         program.AttachShader(shader);
     }

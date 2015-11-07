@@ -36,8 +36,8 @@ public class ShaderViewModel : ViewModelBase
     public Validity SourceValidity => shader.SourceValidity;
 
     public string CompilationError =>
-        shader.CompilationError.hasValue()
-            ? shader.CompilationError.get().TrimEnd()
+        shader.CompilationError.IsSome
+            ? shader.CompilationError.Value.TrimEnd()
             : "";
 
     private bool renaming;
