@@ -98,23 +98,9 @@ public sealed class ShaderCompiler : IGlCache
         }
     }
 
-    private void onShaderAttachedToProgram(Program program, Shader shader)
+    private void onProgramInputsChanged(Program program)
     {
         submitProgramForValidation(program);
-    }
-
-    private void onShaderDetachedFromProgram(Program program, Shader shader)
-    {
-        submitProgramForValidation(program);
-    }
-
-    private void onProgramLinkageValidityChanged(
-        Program program, Validity oldValidity, Validity newValidity)
-    {
-        if (newValidity == Validity.Unknown)
-        {
-            submitProgramForValidation(program);
-        }
     }
 
     private void submitProgramForValidation(Program program)
@@ -134,9 +120,7 @@ public sealed class ShaderCompiler : IGlCache
         Debug.Assert(added, "Program has already been added to this validator");
 
         submitProgramForValidation(program);
-        program.ShaderAttached += onShaderAttachedToProgram;
-        program.ShaderDetached += onShaderDetachedFromProgram;
-        program.LinkageValidityChanged += onProgramLinkageValidityChanged;
+        program.InputsChanged += onProgramInputsChanged;
     }
 
     public void RemoveProgram(Program program)
@@ -146,9 +130,7 @@ public sealed class ShaderCompiler : IGlCache
         var removed = programs.Remove(program);
         Debug.Assert(removed, "Program was never added to this validator");
         
-        program.ShaderAttached -= onShaderAttachedToProgram;
-        program.ShaderDetached -= onShaderDetachedFromProgram;
-        program.LinkageValidityChanged -= onProgramLinkageValidityChanged;
+        program.InputsChanged -= onProgramInputsChanged;
     }
 
     private ShaderData getDataForShader(OpenGL gl, Shader shader)
@@ -189,10 +171,10 @@ public sealed class ShaderCompiler : IGlCache
         foreach (var pair in localShadersToValidate)
         {
             var shader = pair.Key;
-            var shaderSource = pair.Value.SourceToValidate;
+            var inputs = pair.Value;
 
             var shaderData = getDataForShader(gl, shader);
-            shaderData.Source = shaderSource;
+            shaderData.Source = inputs.SourceToValidate;
             shaderData.Validity = Validity.Unknown;
         }
         
@@ -226,12 +208,13 @@ public sealed class ShaderCompiler : IGlCache
                 var compileError = ShaderUtilities.GetShaderInfoLog(gl, shaderData.ShaderHandle);
                 shaderData.Validity = compileError.IsSome ? Validity.Invalid : Validity.Valid;
                 
-                if (localShadersToValidate.ContainsKey(shader))
+                ShaderValidationInputs inputs;
+                if (localShadersToValidate.TryGetValue(shader, out inputs))
                 {
+                    var result = new ShaderValidationResult(inputs.ModCount, compileError);
                     lock (this)
                     {
-                        shaderValidationResults[shader]
-                            = new ShaderValidationResult(shaderData.Source, compileError);
+                        shaderValidationResults[shader] = result;
                     }
                 }
             }
@@ -284,10 +267,21 @@ public sealed class ShaderCompiler : IGlCache
                 }
             }
         }
+
+        foreach (var pair in localShadersToValidate)
+        {
+            var shader = pair.Key;
+            var inputs = pair.Value;
+
+            var shaderData = shaderDataCache[shader];
+
+        }
         
         foreach (var pair in localProgramsToValidate)
         {
             var program = pair.Key;
+            var inputs = pair.Value;
+
             Option<string> linkError;
             string attachedProgramErrors;
             if (invalidPrograms.TryGetValue(program, out attachedProgramErrors))
@@ -299,12 +293,11 @@ public sealed class ShaderCompiler : IGlCache
                 uint glProgramHandle = glProgramCache[program];
                 linkError = ProgramUtilities.GetLinkStatus(gl, glProgramHandle);
             }
-
-            var attachedShaders = pair.Value.AttachedShaders;
+            
+            var result = new ProgramValidationResult(inputs.ModCount, linkError);
             lock (this)
             {
-                programValidationResults[program]
-                    = new ProgramValidationResult(attachedShaders, linkError);
+                programValidationResults[program] = result;
             }
         }
     }
@@ -325,7 +318,8 @@ public sealed class ShaderCompiler : IGlCache
         {
             var shader = pair.Key;
             var result = pair.Value;
-            if (result.ValidatedSource == shader.Source)
+
+            if (result.ModCount == shader.ModCount)
             {
                 var error = result.ValidationError;
                 if (error.IsSome)
@@ -343,13 +337,16 @@ public sealed class ShaderCompiler : IGlCache
             var program = pair.Key;
             var result = pair.Value;
             
-            var error = result.ValidationError;
-            if (error.IsSome)
+            if (result.ModCount == program.ModCount)
             {
-                program.InvalidateProgramLinkage(error.Value);
-            } else
-            {
-                program.ValidateProgramLinkage();
+                var error = result.ValidationError;
+                if (error.IsSome)
+                {
+                    program.InvalidateProgramLinkage(error.Value);
+                } else
+                {
+                    program.ValidateProgramLinkage();
+                }
             }
         }
     }
@@ -373,22 +370,24 @@ public sealed class ShaderCompiler : IGlCache
     {
         public readonly IList<Shader> AttachedShaders;
 
+        public readonly uint ModCount;
+
         public ProgramValidationInputs(Program program)
         {
             AttachedShaders = new List<Shader>(program.ShadersByStage.Values);
+            ModCount = program.ModCount;
         }
     }
 
     private struct ProgramValidationResult
     {
-        public readonly IList<Shader> ValidatedShaders;
+        public readonly uint ModCount;
 
         public readonly Option<string> ValidationError;
 
-        public ProgramValidationResult(
-            IList<Shader> validatedShaders, Option<string> validationError)
+        public ProgramValidationResult(uint modCount, Option<string> validationError)
         {
-            ValidatedShaders = validatedShaders;
+            ModCount = modCount;
             ValidationError = validationError;
         }
     }
@@ -396,43 +395,38 @@ public sealed class ShaderCompiler : IGlCache
     private struct ShaderValidationInputs
     {
         public readonly string SourceToValidate;
+
+        public readonly uint ModCount;
         
         public ShaderValidationInputs(Shader shader)
         {
             SourceToValidate = shader.Source;
+            ModCount = shader.ModCount;
         }
     }
 
     private struct ShaderValidationResult
     {
-        public readonly string ValidatedSource;
+        public readonly uint ModCount;
 
         public readonly Option<string> ValidationError;
 
-        public ShaderValidationResult(
-            string validatedSource, Option<string> validationError)
+        public ShaderValidationResult(uint modCount, Option<string> validationError)
         {
-            ValidatedSource = validatedSource;
+            ModCount = modCount;
             ValidationError = validationError;
         }
     }
 
     private class ShaderData
     {
-        public bool HandleValid;
+        public bool HandleValid = false;
 
         public uint ShaderHandle;
 
-        public string Source;
+        public string Source = "";
 
-        public Validity Validity;
-
-        public ShaderData()
-        {
-            HandleValid = false;
-            Source = "";
-            Validity = Validity.Unknown;
-        }
+        public Validity Validity = Validity.Unknown;
     }
 }
 

@@ -28,7 +28,7 @@ public sealed class Shader
         {
             source = value;
             raiseSourceChanged();
-            ResetSourceValidity();
+            resetSourceValidity();
         }
     }
 
@@ -50,22 +50,40 @@ public sealed class Shader
         private set;
     }
 
-    public delegate void SourceValidityChangedHandler(
-        Shader sender, Validity oldValidity, Validity newValidity);
-    public event SourceValidityChangedHandler SourceValidityChanged;
+    /// <summary>
+    /// A field holding the number of modifications made to this shader.
+    /// </summary>
+    /// <remarks>
+    /// This field is useful for coordinating multiple threads operating on this shader. Its value
+    /// can be sent as part of a work request to another thread, and when the thread is finished
+    /// with the work, its value can be checked before publishing any results. If they are different,
+    /// its results should be discarded.
+    /// 
+    /// It is safe to let this value overflow and wrap around to zero. The probability of this value
+    /// overflowing and matching the exact same value as when another thread saved it is negligible.
+    /// </remarks>
+    public uint ModCount { get; private set; }
 
     public delegate void SourceChangedHandler(Shader sender);
     public event SourceChangedHandler SourceChanged;
+
+    public delegate void SourceValidityChangedHandler(
+        Shader sender, Validity oldValidity, Validity newValidity);
+    public event SourceValidityChangedHandler SourceValidityChanged;
 
     public Shader(ProgramStage stage)
     {
         Name = stage + "Shader";
         Stage = stage;
-        Source = "";
+        source = "";
+        SourceValidity = Validity.Unknown;
+        CompilationError = Option<string>.None();
+        ModCount = 0;
     }
-
+    
     private void raiseSourceChanged()
     {
+        ++ModCount;
         var handlers = SourceChanged;
         handlers?.Invoke(this);
     }
@@ -92,7 +110,7 @@ public sealed class Shader
         handlers?.Invoke(this, oldValidity, newValidity);
     }
     
-    public void ResetSourceValidity()
+    private void resetSourceValidity()
     {
         CompilationError = Option<string>.None();
         setSourceValidity(Validity.Unknown);
