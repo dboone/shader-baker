@@ -4,7 +4,7 @@ using System.Runtime.CompilerServices;
 namespace ShaderBaker.Utilities
 {
 
-public struct IdentityEqualityComparer<T> : IEqualityComparer<T>
+public class IdentityEqualityComparer<T> : IEqualityComparer<T>
 where T : class
 {
     public int GetHashCode(T value)

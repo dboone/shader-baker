@@ -95,9 +95,9 @@ class ObjectRepositoryViewModel : ViewModelBase
 
         AddProgramCommand = new RelayCommand(addProgram);
 
-        AddVertexShaderCommand = new RelayCommand(() => addNewShader(ProgramStage.Vertex));
-        AddGeometryShaderCommand = new RelayCommand(() => addNewShader(ProgramStage.Geometry));
-        AddFragmentShaderCommand = new RelayCommand(() => addNewShader(ProgramStage.Fragment));
+        AddVertexShaderCommand = new RelayCommand(() => addShader(ProgramStage.Vertex));
+        AddGeometryShaderCommand = new RelayCommand(() => addShader(ProgramStage.Geometry));
+        AddFragmentShaderCommand = new RelayCommand(() => addShader(ProgramStage.Fragment));
 
         renameShaderCommand = new RelayCommand(
             () =>
@@ -155,15 +155,11 @@ class ObjectRepositoryViewModel : ViewModelBase
         }
     }
 
-    private void addNewShader(ProgramStage stage)
+    private void addShader(ProgramStage stage)
     {
-        addShader(new Shader(stage));
-    }
+        var shader = new Shader(stage);
 
-    private void addShader(Shader shader)
-    {
         GlContextManager.ShaderCompiler.AddShader(shader);
-
         var shaderViewModel = new ShaderViewModel(shader);
         shaderViewModelsByShader.Add(shader, shaderViewModel);
         Shaders.Add(shaderViewModel);
@@ -172,8 +168,8 @@ class ObjectRepositoryViewModel : ViewModelBase
     private void addProgram()
     {
         var program = new Program();
-        GlContextManager.ShaderCompiler.AddProgram(program);
 
+        GlContextManager.ShaderCompiler.AddProgram(program);
         Programs.Add(new ProgramViewModel(program));
     }
 

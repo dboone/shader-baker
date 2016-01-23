@@ -11,7 +11,7 @@ public enum ProgramStage
     Fragment
 }
 
-public static class ProgramPipelineStageMethods
+public static class ProgramStageMethods
 {
     public static uint GlEnumValue(this ProgramStage stage)
     {
