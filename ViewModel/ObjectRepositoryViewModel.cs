@@ -4,6 +4,9 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Windows.Input;
 using System.Windows.Threading;
+using System.Windows;
+using System.Windows.Media;
+using System.Threading;
 
 namespace ShaderBaker.ViewModel
 {
@@ -13,7 +16,7 @@ class ObjectRepositoryViewModel : ViewModelBase
     public GlContextManager GlContextManager { get; }
 
     private readonly IDictionary<Shader, ShaderViewModel> shaderViewModelsByShader;
-    
+
     public ObservableCollection<ShaderViewModel> Shaders { get; }
 
     public ObservableCollection<ShaderViewModel> OpenShaders { get; }
@@ -70,6 +73,7 @@ class ObjectRepositoryViewModel : ViewModelBase
         set
         {
             activeProgram = value;
+            GlContextManager.SetActiveProgram(activeProgram.Program);
             OnPropertyChanged("ActiveProgram");
         }
     }
@@ -84,9 +88,22 @@ class ObjectRepositoryViewModel : ViewModelBase
     private readonly RelayCommand activateSelectedProgramCommand;
     public ICommand ActivateSelectedProgramCommand => activateSelectedProgramCommand;
 
+    private ImageSource programPreviewImage;
+    public ImageSource ProgramPreviewImage
+    {
+        get { return programPreviewImage; }
+        set
+        {
+            programPreviewImage = value;
+            OnPropertyChanged("ProgramPreviewImage");
+        }
+    }
+
     public ObjectRepositoryViewModel()
     {
         GlContextManager = new GlContextManager();
+        GlContextManager.ImageRendered += ProgramPreviewImageRendered;
+
         Programs = new ObservableCollection<ProgramViewModel>();
         shaderViewModelsByShader = new Dictionary<Shader, ShaderViewModel>();
         Shaders = new ObservableCollection<ShaderViewModel>();
@@ -191,6 +208,16 @@ class ObjectRepositoryViewModel : ViewModelBase
     public void CloseShaderTab(ShaderViewModel shader)
     {
         OpenShaders.Remove(shader);
+    }
+
+    private void ProgramPreviewImageRendered(ImageSource image)
+    {
+        Application.Current.Dispatcher.InvokeAsync(() => ProgramPreviewImage = image);
+    }
+
+    public void OnResize(Size newSize)
+    {
+        GlContextManager.ResizePreviewImage((int) newSize.Width, (int) newSize.Height);
     }
 }
 

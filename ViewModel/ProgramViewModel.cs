@@ -9,14 +9,14 @@ namespace ShaderBaker.ViewModel
 
 public class ProgramViewModel : ViewModelBase
 {
-    private readonly Program program;
+    public Program Program { get; }
 
     public string ProgramName
     {
-        get { return program.Name; }
+        get { return Program.Name; }
         set
         {
-            program.Name = value;
+            Program.Name = value;
             OnPropertyChanged("ProgramName");
         }
     }
@@ -25,16 +25,16 @@ public class ProgramViewModel : ViewModelBase
     
     public ObservableCollection<ShaderViewModel> AttachedShaders { get; }
     
-    public Validity LinkageValidity => program.LinkageValidity;
+    public Validity LinkageValidity => Program.LinkageValidity;
     
     public string LinkError =>
-        program.LinkError.IsSome
-            ? program.LinkError.Value.TrimEnd()
+        Program.LinkError.IsSome
+            ? Program.LinkError.Value.TrimEnd()
             : "";
 
     public ProgramViewModel(Program program)
     {
-        this.program = program;
+        this.Program = program;
         shadersByStage = new Dictionary<ProgramStage, ShaderViewModel>();
         AttachedShaders = new ObservableCollection<ShaderViewModel>();
         program.LinkageValidityChanged += onLinkageValidityChanged;
@@ -59,14 +59,14 @@ public class ProgramViewModel : ViewModelBase
             "A shader for the " + shaderViewModel.Stage.ToString()
                 + " stage is already attached to this program view model");
 
-        shaderViewModel.AttachToProgram(program);
+        shaderViewModel.AttachToProgram(Program);
         shadersByStage.Add(shaderViewModel.Stage, shaderViewModel);
         AttachedShaders.Add(shaderViewModel);
     }
 
     public void DetachShader(ShaderViewModel shaderViewModel)
     {
-        shaderViewModel.DetachFromProgram(program);
+        shaderViewModel.DetachFromProgram(Program);
         bool removed = shadersByStage.Remove(shaderViewModel.Stage);
         Debug.Assert(
             removed,

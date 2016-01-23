@@ -1,43 +1,42 @@
 ﻿using ShaderBaker.GlRenderer;
-using ShaderBaker.Utilities;
 
 namespace ShaderBaker.ViewModel
 {
 
 public class ShaderViewModel : ViewModelBase
 {
-    private readonly Shader shader;
+    public Shader Shader { get; }
 
     public string ShaderName
     {
         get
         {
-            return shader.Name;
+            return Shader.Name;
         }
         set
         {
-            shader.Name = value;
+            Shader.Name = value;
             OnPropertyChanged("ShaderName");
         }
     }
 
-    public ProgramStage Stage => shader.Stage;
+    public ProgramStage Stage => Shader.Stage;
 
     public string Source
     {
-        get { return shader.Source; }
+        get { return Shader.Source; }
         set
         {
-            shader.Source = value;
+            Shader.Source = value;
             OnPropertyChanged("Source");
         }
     }
 
-    public Validity SourceValidity => shader.SourceValidity;
+    public Validity SourceValidity => Shader.SourceValidity;
 
     public string CompilationError =>
-        shader.CompilationError.IsSome
-            ? shader.CompilationError.Value.TrimEnd()
+        Shader.CompilationError.IsSome
+            ? Shader.CompilationError.Value.TrimEnd()
             : "";
 
     private bool renaming;
@@ -49,26 +48,26 @@ public class ShaderViewModel : ViewModelBase
         }
         set
         {
-            this.renaming = value;
+            renaming = value;
             OnPropertyChanged("Renaming");
         }
     }
 
     public ShaderViewModel(Shader shader)
     {
-        this.shader = shader;
+        this.Shader = shader;
         renaming = false;
         shader.SourceValidityChanged += onSourceValidityChanged;
     }
 
     public void AttachToProgram(Program program)
     {
-        program.AttachShader(shader);
+        program.AttachShader(Shader);
     }
 
     public void DetachFromProgram(Program program)
     {
-        program.DetachShader(shader);
+        program.DetachShader(Shader);
     }
 
     private void onSourceValidityChanged(

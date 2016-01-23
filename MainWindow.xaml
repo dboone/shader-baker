@@ -99,69 +99,84 @@
                 <RowDefinition Height="5"/>
                 <RowDefinition Height="200"/>
             </Grid.RowDefinitions>
-            <TabControl Name="ShaderTabTextView"
-                        Grid.Row="0"
-                        Background="#FF222222"
-                        BorderBrush="{x:Null}"
-                        ItemsSource="{Binding OpenShaders}"
-                        DataContext="{StaticResource ObjectRepoViewModel}"
-                        SelectedIndex="{Binding ActiveOpenShaderIndex}">
-                <TabControl.Resources>
-                    <Style TargetType="TabItem">
-                        <Setter Property="Template">
-                            <Setter.Value>
-                                <ControlTemplate TargetType="TabItem">
-                                    <Grid Name="Panel">
-                                        <ContentPresenter VerticalAlignment="Center"
-                                                          HorizontalAlignment="Center"
-                                                          ContentSource="Header"
-                                                          Margin="5,2"/>
-                                    </Grid>
-                                    <ControlTemplate.Triggers>
-                                        <Trigger Property="IsSelected" Value="True">
-                                            <Setter TargetName="Panel" Property="Background" Value="#FF333333"/>
-                                        </Trigger>
-                                        <Trigger Property="IsSelected" Value="False">
-                                            <Setter TargetName="Panel" Property="Background" Value="#FF222222"/>
-                                        </Trigger>
-                                    </ControlTemplate.Triggers>
-                                </ControlTemplate>
-                            </Setter.Value>
-                        </Setter>
-                    </Style>
-                </TabControl.Resources>
-                <TabControl.ItemTemplate>
-                    <DataTemplate>
-                        <StackPanel Orientation="Horizontal">
-                            <vw:ShaderListItemView Padding="2"
-                                                   ShaderName="{Binding ShaderName}"
-                                                   ShaderSourceValidity="{Binding SourceValidity}"
-                                                   ShaderStage="{Binding Stage}"/>
-                            <Button Click="CloseTabButton_Click"
+            <Grid Grid.Row="0"
+                  Background="#FF222222">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="5"/>
+                    <ColumnDefinition Width="600"/>
+                </Grid.ColumnDefinitions>
+
+                <TabControl Name="ShaderTabTextView"
+                            Grid.Column="0"
+                            Background="#FF222222"
+                            BorderBrush="{x:Null}"
+                            ItemsSource="{Binding OpenShaders}"
+                            DataContext="{StaticResource ObjectRepoViewModel}"
+                            SelectedIndex="{Binding ActiveOpenShaderIndex}">
+                    <TabControl.Resources>
+                        <Style TargetType="TabItem">
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="TabItem">
+                                        <Grid Name="Panel">
+                                            <ContentPresenter VerticalAlignment="Center"
+                                                              HorizontalAlignment="Center"
+                                                              ContentSource="Header"
+                                                              Margin="5,2"/>
+                                        </Grid>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsSelected" Value="True">
+                                                <Setter TargetName="Panel" Property="Background" Value="#FF333333"/>
+                                            </Trigger>
+                                            <Trigger Property="IsSelected" Value="False">
+                                                <Setter TargetName="Panel" Property="Background" Value="#FF222222"/>
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </TabControl.Resources>
+                    <TabControl.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal">
+                                <vw:ShaderListItemView Padding="2"
+                                                       ShaderName="{Binding ShaderName}"
+                                                       ShaderSourceValidity="{Binding SourceValidity}"
+                                                       ShaderStage="{Binding Stage}"/>
+                                <Button Click="CloseTabButton_Click"
                                     Style="{StaticResource TransparentButtonStyle}"
                                     VerticalAlignment="Center">
-                                <Image>
-                                    <Image.Style>
-                                        <Style TargetType="{x:Type Image}">
-                                            <Setter Property="Source" Value="{StaticResource TabCloseButton}"/>
-                                            <Style.Triggers>
-                                                <Trigger Property="IsMouseOver" Value="True">
-                                                    <Setter Property="Source" Value="{StaticResource TabCloseButtonMouseOver}"/>
-                                                </Trigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </Image.Style>
-                                </Image>
-                            </Button>
-                        </StackPanel>
-                    </DataTemplate>
-                </TabControl.ItemTemplate>
-                <TabControl.ContentTemplate>
-                    <DataTemplate>
-                        <vw:ShaderTextView ShaderText="{Binding Source}"/>
-                    </DataTemplate>
-                </TabControl.ContentTemplate>
-            </TabControl>
+                                    <Image>
+                                        <Image.Style>
+                                            <Style TargetType="{x:Type Image}">
+                                                <Setter Property="Source" Value="{StaticResource TabCloseButton}"/>
+                                                <Style.Triggers>
+                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                        <Setter Property="Source" Value="{StaticResource TabCloseButtonMouseOver}"/>
+                                                    </Trigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Image.Style>
+                                    </Image>
+                                </Button>
+                            </StackPanel>
+                        </DataTemplate>
+                    </TabControl.ItemTemplate>
+                    <TabControl.ContentTemplate>
+                        <DataTemplate>
+                            <vw:ShaderTextView ShaderText="{Binding Source}"/>
+                        </DataTemplate>
+                    </TabControl.ContentTemplate>
+                </TabControl>
+
+                <GridSplitter Grid.Column="1"
+                              HorizontalAlignment="Stretch"
+                              ResizeBehavior="PreviousAndNext"/>
+
+                <vw:ProgramPreview Grid.Column="2"/>
+            </Grid>
             <GridSplitter Grid.Row="1"
                           HorizontalAlignment="Stretch"
                           ResizeBehavior="PreviousAndNext"/>
