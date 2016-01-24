@@ -55,14 +55,9 @@ public class ShaderViewModel : ViewModelBase
 
     public ShaderViewModel(Shader shader)
     {
-        this.Shader = shader;
+        Shader = shader;
         renaming = false;
         shader.SourceValidityChanged += onSourceValidityChanged;
-    }
-
-    public void AttachToProgram(Program program)
-    {
-        program.AttachShader(Shader);
     }
 
     public void DetachFromProgram(Program program)

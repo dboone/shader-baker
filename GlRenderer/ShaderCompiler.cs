@@ -112,7 +112,6 @@ public sealed class ShaderCompiler
     public void AddProgram(Program program)
     {
         Debug.Assert(program != null, "Cannot add a null program");
-        Debug.Assert(program.ShadersByStage.Count == 0, "Cannot add a program that already has shaders attached");
 
         var added = programs.Add(program);
         Debug.Assert(added, "Program has already been added to this validator");

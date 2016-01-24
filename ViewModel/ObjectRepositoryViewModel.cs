@@ -6,6 +6,9 @@ using System.Windows.Input;
 using System.Windows.Threading;
 using System.Windows;
 using System.Windows.Media;
+using System.IO;
+using ShaderBaker.Serial;
+using System.Linq;
 using System.Threading;
 
 namespace ShaderBaker.ViewModel
@@ -13,6 +16,8 @@ namespace ShaderBaker.ViewModel
 
 class ObjectRepositoryViewModel : ViewModelBase
 {
+    private const string ProjectFileName = "test.sbp";
+
     public GlContextManager GlContextManager { get; }
 
     private readonly IDictionary<Shader, ShaderViewModel> shaderViewModelsByShader;
@@ -78,6 +83,12 @@ class ObjectRepositoryViewModel : ViewModelBase
         }
     }
 
+    private readonly RelayCommand openProjectCommand;
+    public ICommand OpenProjectCommand => openProjectCommand;
+
+    private readonly RelayCommand saveProjectCommand;
+    public ICommand SaveProjectCommand => saveProjectCommand;
+
     private readonly RelayCommand renameShaderCommand;
     public ICommand RenameShaderCommand => renameShaderCommand;
 
@@ -110,11 +121,14 @@ class ObjectRepositoryViewModel : ViewModelBase
         OpenShaders = new ObservableCollection<ShaderViewModel>();
         activeOpenShaderIndex = -1;
 
-        AddProgramCommand = new RelayCommand(addProgram);
+        openProjectCommand = new RelayCommand(() => OpenProjectFromFile(ProjectFileName));
+        saveProjectCommand = new RelayCommand(() => SaveProjectToFile(ProjectFileName));
 
-        AddVertexShaderCommand = new RelayCommand(() => addShader(ProgramStage.Vertex));
-        AddGeometryShaderCommand = new RelayCommand(() => addShader(ProgramStage.Geometry));
-        AddFragmentShaderCommand = new RelayCommand(() => addShader(ProgramStage.Fragment));
+        AddProgramCommand = new RelayCommand(() => AddProgram(new Program()));
+
+        AddVertexShaderCommand = new RelayCommand(() => addNewShader(ProgramStage.Vertex));
+        AddGeometryShaderCommand = new RelayCommand(() => addNewShader(ProgramStage.Geometry));
+        AddFragmentShaderCommand = new RelayCommand(() => addNewShader(ProgramStage.Fragment));
 
         renameShaderCommand = new RelayCommand(
             () =>
@@ -172,22 +186,33 @@ class ObjectRepositoryViewModel : ViewModelBase
         }
     }
 
-    private void addShader(ProgramStage stage)
+    private void addNewShader(ProgramStage stage)
     {
-        var shader = new Shader(stage);
+        AddShader(new Shader(stage));
+    }
 
+    public void AddShader(Shader shader)
+    {
         GlContextManager.ShaderCompiler.AddShader(shader);
         var shaderViewModel = new ShaderViewModel(shader);
         shaderViewModelsByShader.Add(shader, shaderViewModel);
         Shaders.Add(shaderViewModel);
     }
-    
-    private void addProgram()
-    {
-        var program = new Program();
 
-        GlContextManager.ShaderCompiler.AddProgram(program);
-        Programs.Add(new ProgramViewModel(program));
+    public void AddNewProgram()
+    {
+        addProgramViewModel(new ProgramViewModel());
+    }
+
+    public void AddProgram(Program program)
+    {
+        addProgramViewModel(new ProgramViewModel(program, shaderViewModelsByShader));
+    }
+
+    private void addProgramViewModel(ProgramViewModel programViewModel)
+    {
+        GlContextManager.ShaderCompiler.AddProgram(programViewModel.Program);
+        Programs.Add(programViewModel);
     }
 
     private void attachSelectedShaderToSelectedProgram()
@@ -218,6 +243,43 @@ class ObjectRepositoryViewModel : ViewModelBase
     public void OnResize(Size newSize)
     {
         GlContextManager.ResizePreviewImage((int) newSize.Width, (int) newSize.Height);
+    }
+
+    public void OpenProjectFromFile(string projectFileName)
+    {
+        try
+        {
+//TODO do the file reading on a different thread from the UI thread
+            using (var inputStream = new FileStream(projectFileName, FileMode.Open, FileAccess.Read))
+            {
+                Shader[] shaders;
+                Program[] programs;
+                ProjectSerializer.ReadProject(inputStream, out shaders, out programs);
+
+                foreach (var shader in shaders)
+                {
+                    AddShader(shader);
+                }
+                foreach (var program in programs)
+                {
+                    AddProgram(program);
+                }
+            }
+        } catch (FileNotFoundException ex)
+        {
+            Console.WriteLine(" *** Could not load Shader Baker project file: " + ex.FileName);
+        }
+    }
+
+    public void SaveProjectToFile(string projectFileName)
+    {
+//TODO do the file writing on a different thread from the UI thread
+        using (var outputStream = new FileStream(projectFileName, FileMode.OpenOrCreate, FileAccess.Write))
+        {
+            var shaders = Shaders.Select(viewModel => viewModel.Shader).ToArray();
+            var programs = Programs.Select(viewModel => viewModel.Program).ToArray();
+            ProjectSerializer.WriteProject(outputStream, shaders, programs);
+        }
     }
 }
 

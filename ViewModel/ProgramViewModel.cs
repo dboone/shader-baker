@@ -31,13 +31,29 @@ public class ProgramViewModel : ViewModelBase
         Program.LinkError.IsSome
             ? Program.LinkError.Value.TrimEnd()
             : "";
-
-    public ProgramViewModel(Program program)
+            
+    private ProgramViewModel(Program program)
     {
-        this.Program = program;
+        Program = program;
         shadersByStage = new Dictionary<ProgramStage, ShaderViewModel>();
         AttachedShaders = new ObservableCollection<ShaderViewModel>();
         program.LinkageValidityChanged += onLinkageValidityChanged;
+    }
+
+    public ProgramViewModel() : this(new Program())
+    { }
+
+    public ProgramViewModel(
+        Program program, IDictionary<Shader, ShaderViewModel> shaderViewModelsByShader) :
+    this(program)
+    {
+        foreach (var attachedShader in program.ShadersByStage.Values)
+        {
+            var shaderViewModel = shaderViewModelsByShader[attachedShader];
+
+            shadersByStage.Add(attachedShader.Stage, shaderViewModel);
+            AttachedShaders.Add(shaderViewModel);
+        }
     }
 
     public Option<ShaderViewModel> GetShaderForStage(ProgramStage stage)
@@ -59,7 +75,7 @@ public class ProgramViewModel : ViewModelBase
             "A shader for the " + shaderViewModel.Stage.ToString()
                 + " stage is already attached to this program view model");
 
-        shaderViewModel.AttachToProgram(Program);
+        Program.AttachShader(shaderViewModel.Shader);
         shadersByStage.Add(shaderViewModel.Stage, shaderViewModel);
         AttachedShaders.Add(shaderViewModel);
     }
