@@ -231,6 +231,12 @@ public sealed class GlContextManager
         cancelTokenSource.Dispose();
     }
 
+    public void StopAndWait()
+    {
+        Stop();
+        glThread.Join();
+    }
+
     private bool createRenderContext(OpenGL gl, int width, int height)
     {
         return gl.Create(

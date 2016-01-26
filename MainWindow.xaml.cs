@@ -29,7 +29,7 @@ public partial class MainWindow : Window
     {
         base.OnClosed(e);
 
-        getDataContext().GlContextManager.Stop();
+        getDataContext().GlContextManager.StopAndWait();
     }
     
     private void ShaderListView_MouseDoubleClick(object sender, MouseButtonEventArgs e)
