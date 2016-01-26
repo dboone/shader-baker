@@ -13,6 +13,10 @@
             <Setter Property="BorderBrush" Value="{x:Null}"/>
         </Style>
     </Window.Resources>
+    <Window.InputBindings>
+        <KeyBinding Modifiers="Ctrl" Key="O" Command="{Binding OpenProjectCommand}"/>
+        <KeyBinding Modifiers="Ctrl" Key="S" Command="{Binding SaveProjectCommand}"/>
+    </Window.InputBindings>
     <Grid Background="#FF222222">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="200"/>
