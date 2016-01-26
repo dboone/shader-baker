@@ -19,10 +19,10 @@ public static class ShaderUtilities
 
             StringBuilder log = new StringBuilder(logLength[0]);
             gl.GetShaderInfoLog(shaderHandle, logLength[0], IntPtr.Zero, log);
-            return Option<string>.of(log.ToString());
+            return Option<string>.Some(log.ToString());
         } else
         {
-            return Option<string>.empty();
+            return Option<string>.None();
         }
     }
 }

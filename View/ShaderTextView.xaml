@@ -2,15 +2,15 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="clr-namespace:ShaderBaker.ViewModel">
-    <Grid x:Name="LayoutRoot" Background="White">
-        <TextBox AcceptsReturn="True"
-                 AcceptsTab="True"
-                 FontFamily="Courier New"
-                 Background="#FF222222"
-                 Foreground="#FFFAEBD7"
-                 FontSize="14"
-                 ScrollViewer.VerticalScrollBarVisibility="Auto"
-                 ScrollViewer.HorizontalScrollBarVisibility="Auto"
-                 Text="{Binding ShaderText, UpdateSourceTrigger=PropertyChanged}"/>
-    </Grid>
+    <TextBox Name="LayoutRoot"
+             AcceptsReturn="True"
+             AcceptsTab="True"
+             FontFamily="Courier New"
+             Background="#FF222222"
+             Foreground="#FFFAEBD7"
+             FontSize="14"
+             ScrollViewer.VerticalScrollBarVisibility="Auto"
+             ScrollViewer.HorizontalScrollBarVisibility="Auto"
+             Text="{Binding ShaderText, UpdateSourceTrigger=PropertyChanged}"
+             BorderThickness="0"/>
 </UserControl>

@@ -1,239 +1,335 @@
-﻿using ShaderBaker.GlRenderer;
-using ShaderBaker.GlRenderer.Task;
-using ShaderBaker.GlUtilities;
+﻿using ShaderBaker.GlUtilities;
 using ShaderBaker.Utilities;
 using SharpGL;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Text;
 
-namespace GlRenderer.ShaderBaker
+namespace ShaderBaker.GlRenderer
 {
 
-public class ShaderCompiler
+/// <summary>
+/// A class for compiling GLSL shaders through an OpenGL context.
+/// </summary>
+/// <remarks>
+/// This class has some a special threading model. It is designed to work with
+/// two threads, an Application Thread which manages the application state, and
+/// an OpenGL Thread which communicates with OpenGL. The OpenGL Thread must have
+/// a current OpenGL context. The methods AddShader, RemoveShader, and
+/// PublishValidationResults should only be called from the Application Thread.
+/// The methods ValidateShaders and ClearCache should only be called from the
+/// OpenGL thread.
+/// 
+/// This threading model is to simplify the management of OpenGL objects, such
+/// that they are used with the correct context. It also provides a simple model
+/// for exchanging information between OpenGL and the application.
+/// </remarks>
+public sealed class ShaderCompiler
 {
-    private readonly GlContextManager glContextManager;
-    private readonly SingletonGlTask compileVertexShaderTask;
-    private readonly SingletonGlTask compileFragmentShaderTask;
-
-    private uint renderProgramHandle;
-    private uint compileProgramHandle;
-
-    private uint vertexShaderHandle;
-    private uint fragmentShaderHandle;
-    
-    private volatile string _vertexShaderSource;
-    public string VertexShaderSource
+    private static ISet<T> IdentitySet<T>() where T : class
     {
-        get { return _vertexShaderSource; }
-        set
-        {
-            _vertexShaderSource = value;
-            compileVertexShaderTask.Submit(
-                new CompileVertexShaderTask(
-                    new CompileShaderHelper(this, vertexShaderHandle, value)));
-        }
+        return new HashSet<T>(new IdentityEqualityComparer<T>());
+    }
+
+    private static IDictionary<K, V> IdentityMap<K, V>() where K : class
+    {
+        return new Dictionary<K, V>(new IdentityEqualityComparer<K>());
+    }
+
+    private static IDictionary<K, V> IdentityMap<K, V>(int capacity) where K : class
+    {
+        return new Dictionary<K, V>(capacity, new IdentityEqualityComparer<K>());
     }
     
-    private volatile string _fragmentShaderSource;
-    public string FragmentShaderSource
-    {
-        get { return _fragmentShaderSource; }
-        set
-        {
-            _fragmentShaderSource = value;
-            compileFragmentShaderTask.Submit(
-                new CompileFragmentShaderTask(
-                    new CompileShaderHelper(this, fragmentShaderHandle, value)));
-        }
-    }
+// The shadersToCompile and validationResults fields follow a double-buffering pattern
+// to ensure thread-safety. When an element is added to one of these collections, a
+// mutex is acquired, the element added, and then the mutex is released. When the collection
+// is operated on, the same mutex is acquired; a reference to the collection is copied to a
+// local variable; a newly-allocated, empty collection is assigned to the field; and the mutex
+// is released. This pattern minimizes thread communication and the time a mutex is held.
+//
+// These collections also store immutable values, which can be safely exchanged across threads.
         
-    public delegate void VertexShaderCompiledEventHandler(ShaderCompiler sender, uint shaderHandle, Option<string> compileStatus);
-    public event VertexShaderCompiledEventHandler VertexShaderCompiled;
+    private readonly ISet<Shader> shaders = IdentitySet<Shader>();
 
-    public delegate void FragmentShaderCompiledEventHandler(ShaderCompiler sender, uint shaderHandle, Option<string> compileStatus);
-    public event FragmentShaderCompiledEventHandler FragmentShaderCompiled;
-
-    public delegate void ProgramLinkedEventHandler(ShaderCompiler sender, Option<string> linkStatus);
-    public event ProgramLinkedEventHandler ProgramLinked;
-
-    public ShaderCompiler(OpenGL gl, GlContextManager glContextManager)
-    {
-        this.glContextManager = glContextManager;
-        this.compileVertexShaderTask = glContextManager.CreateSingletonGlTask();
-        this.compileFragmentShaderTask = glContextManager.CreateSingletonGlTask();
-
-        compileProgramHandle = gl.CreateProgram();
-        renderProgramHandle = gl.CreateProgram();
+    private IDictionary<Shader, ShaderValidationInputs> shadersToValidate
+        = IdentityMap<Shader, ShaderValidationInputs>();
+    
+    private IDictionary<Shader, ShaderValidationResult> shaderValidationResults
+        = IdentityMap<Shader, ShaderValidationResult>();
         
-        vertexShaderHandle = gl.CreateShader(OpenGL.GL_VERTEX_SHADER);
-        fragmentShaderHandle = gl.CreateShader(OpenGL.GL_FRAGMENT_SHADER);
+    private readonly ISet<Program> programs = IdentitySet<Program>();
 
-        gl.AttachShader(compileProgramHandle, vertexShaderHandle);
-        gl.AttachShader(compileProgramHandle, fragmentShaderHandle);
+    private IDictionary<Program, ProgramValidationInputs> programsToValidate
+        = IdentityMap<Program, ProgramValidationInputs>();
+    
+    private IDictionary<Program, ProgramValidationResult> programValidationResults
+        = IdentityMap<Program, ProgramValidationResult>();
 
-        gl.AttachShader(renderProgramHandle, vertexShaderHandle);
-        gl.AttachShader(renderProgramHandle, fragmentShaderHandle);
-
-        VertexShaderSource = 
-              "#version 330\n"
-            + "\n"
-            + "void main()\n"
-            + "{\n"
-            + "    gl_Position = vec4(0.0, 0.0, 0.0, 1.0);\n"
-            + "}\n";
-
-        FragmentShaderSource =
-             "#version 330\n"
-            + "\n"
-            + "out vec4 color;"
-            + "\n"
-            + "void main()\n"
-            + "{\n"
-            + "    color = vec4(1.0, 1.0, 1.0, 1.0);\n"
-            + "}\n";
-    }
-
-    private Option<string> recompileVertexShader(OpenGL gl)
+    private void submitShaderForValidation(Shader shader)
     {
-        return recompileShader(gl, vertexShaderHandle, _vertexShaderSource);
-    }
-
-    private Option<string> recompileFragmentShader(OpenGL gl)
-    {
-        return recompileShader(gl, fragmentShaderHandle, _fragmentShaderSource);
-    }
-
-    private static Option<string> recompileShader(OpenGL gl, uint shaderHandle, string shaderSource)
-    {
-        gl.ShaderSource(shaderHandle, shaderSource);
-        gl.CompileShader(shaderHandle);
-        return ShaderUtilities.GetShaderInfoLog(gl, shaderHandle);
-    }
-
-    private static Option<string> relinkProgram(OpenGL gl, uint programHandle)
-    {
-        gl.LinkProgram(programHandle);
-
-        Option<string> linkStatus = ProgramUtilities.GetLinkStatus(gl, programHandle);
-        if (linkStatus.hasValue())
+        lock (this)
         {
-            return linkStatus;
+            shadersToValidate[shader] = new ShaderValidationInputs(shader);
         }
-
-        Option<string> validateStatus = ProgramUtilities.Validate(gl, programHandle);
-        if (validateStatus.hasValue())
-        {
-            return validateStatus;
-        }
-
-        return Option<string>.empty();
     }
-
-    private void swapRenderProgram()
+    
+    public void AddShader(Shader shader)
     {
-        uint tmp = compileProgramHandle;
-        compileProgramHandle = renderProgramHandle;
-        renderProgramHandle = tmp;
-    }
+        Debug.Assert(shader != null, "shader cannot be null");
 
-    public void UseRenderProgram(OpenGL gl)
-    {
-        gl.UseProgram(renderProgramHandle);
-    }
-
-    public void DisposeGlObjects(OpenGL gl)
-    {
-        gl.DeleteProgram(renderProgramHandle);
-        gl.DeleteProgram(compileProgramHandle);
-        gl.DeleteProgram(vertexShaderHandle);
-        gl.DeleteProgram(fragmentShaderHandle);
+        var added = shaders.Add(shader);
+        Debug.Assert(added, "Shader has already been added to this validator");
         
-        renderProgramHandle = 0;
-        compileProgramHandle = 0;
-        vertexShaderHandle = 0;
-        fragmentShaderHandle = 0;
+        submitShaderForValidation(shader);
+        shader.SourceChanged += submitShaderForValidation;
     }
 
-    private class CompileShaderHelper
+    public void RemoveShader(Shader shader)
     {
-        public readonly ShaderCompiler shaderCompiler;
+        Debug.Assert(shader != null, "shader cannot be null");
 
-        public readonly uint shaderHandle;
+        var removed = shaders.Remove(shader);
+        Debug.Assert(removed, "Shader was never added to this validator");
+        
+        shader.SourceChanged -= submitShaderForValidation;
+    }
 
-        public readonly string shaderSource;
+    private void onProgramInputsChanged(Program program)
+    {
+        submitProgramForValidation(program);
+    }
 
-        public CompileShaderHelper(
-            ShaderCompiler shaderCompiler, uint shaderHandle, string shaderSource)
+    private void submitProgramForValidation(Program program)
+    {
+        lock (this)
         {
-            this.shaderCompiler = shaderCompiler;
-            this.shaderHandle = shaderHandle;
-            this.shaderSource = shaderSource;
+            programsToValidate[program] = new ProgramValidationInputs(program);
         }
+    }
 
-        public Option<string> Execute(OpenGL gl)
+    public void AddProgram(Program program)
+    {
+        Debug.Assert(program != null, "Cannot add a null program");
+        Debug.Assert(program.ShadersByStage.Count == 0, "Cannot add a program that already has shaders attached");
+
+        var added = programs.Add(program);
+        Debug.Assert(added, "Program has already been added to this validator");
+
+        submitProgramForValidation(program);
+        program.InputsChanged += onProgramInputsChanged;
+    }
+
+    public void RemoveProgram(Program program)
+    {
+        Debug.Assert(program != null, "Cannot remove a null program");
+
+        var removed = programs.Remove(program);
+        Debug.Assert(removed, "Program was never added to this validator");
+        
+        program.InputsChanged -= onProgramInputsChanged;
+    }
+
+    public void ValidateShaders(OpenGL gl)
+    {
+        IDictionary<Shader, ShaderValidationInputs> localShadersToValidate;
+        IDictionary<Program, ProgramValidationInputs> localProgramsToValidate;
+        lock (this)
         {
-            Option<string> compileStatus = recompileShader(gl, shaderHandle, shaderSource);
-            if (!compileStatus.hasValue())
+            localShadersToValidate = shadersToValidate;
+            localProgramsToValidate = programsToValidate;
+            shadersToValidate = IdentityMap<Shader, ShaderValidationInputs>(localShadersToValidate.Count);
+            programsToValidate = IdentityMap<Program, ProgramValidationInputs>(localProgramsToValidate.Count);
+        }
+        
+        foreach (var pair in localShadersToValidate)
+        {
+            var shaderInputs = pair.Value;
+
+            var shaderHandle = gl.CreateShader(shaderInputs.Stage.GlEnumValue());
+            
+            gl.ShaderSource(shaderHandle, shaderInputs.SourceToValidate);
+            gl.CompileShader(shaderHandle);
+            var compileError = ShaderUtilities.GetShaderInfoLog(gl, shaderHandle);
+            gl.DeleteShader(shaderHandle);
+            
+            var shader = pair.Key;
+            var result = new ShaderValidationResult(
+                shaderInputs.Shader, shaderInputs.ModCount, compileError);
+            lock (this)
             {
-                shaderCompiler.glContextManager.SubmitGlTask(new LinkProgramTask(shaderCompiler));
+                shaderValidationResults[shader] = result;
             }
-            return compileStatus;
-        }
-    }
-
-    private class CompileVertexShaderTask : IGlTask
-    {
-        private readonly CompileShaderHelper helper;
-
-        public CompileVertexShaderTask(CompileShaderHelper helper)
-        {
-            this.helper = helper;
         }
 
-        public void Execute(OpenGL gl)
+        foreach (var pair in localProgramsToValidate)
         {
-            Option<string> compileStatus = helper.Execute(gl);
-            helper.shaderCompiler.VertexShaderCompiled(
-                helper.shaderCompiler,
-                helper.shaderHandle,
-                compileStatus);
-        }
-    }
+            var programInputs = pair.Value;
+            
+            var programHandle = gl.CreateProgram();
 
-    private class CompileFragmentShaderTask : IGlTask
-    {
-        private readonly CompileShaderHelper helper;
-
-        public CompileFragmentShaderTask(CompileShaderHelper helper)
-        {
-            this.helper = helper;
-        }
-
-        public void Execute(OpenGL gl)
-        {
-            Option<string> compileStatus = helper.Execute(gl);
-            helper.shaderCompiler.FragmentShaderCompiled(
-                helper.shaderCompiler,
-                helper.shaderHandle,
-                compileStatus);
-        }
-    }
-
-    private class LinkProgramTask : IGlTask
-    {
-        private readonly ShaderCompiler shaderCompiler;
-
-        public LinkProgramTask(ShaderCompiler shaderCompiler)
-        {
-            this.shaderCompiler = shaderCompiler;
-        }
-
-        public void Execute(OpenGL gl)
-        {
-            Option<string> linkStatus = relinkProgram(gl, shaderCompiler.compileProgramHandle);
-            if (!linkStatus.hasValue())
+            var shaderHandles = new List<uint>(programInputs.AttachedShaders.Count);
+            var failedShaders = new List<ProgramStage>(programInputs.AttachedShaders.Count);
+            foreach (var shaderInputs in programInputs.AttachedShaders)
             {
-                shaderCompiler.swapRenderProgram();
+                var shaderHandle = gl.CreateShader(shaderInputs.Stage.GlEnumValue());
+                shaderHandles.Add(shaderHandle);
+
+                gl.ShaderSource(shaderHandle, shaderInputs.SourceToValidate);
+                gl.CompileShader(shaderHandle);
+                var compileError = ShaderUtilities.GetShaderInfoLog(gl, shaderHandle);
+                if (compileError.IsSome)
+                {
+                    failedShaders.Add(shaderInputs.Stage);
+                }
+                
+                gl.AttachShader(programHandle, shaderHandle);
             }
-            shaderCompiler.ProgramLinked(shaderCompiler, linkStatus);
+
+            Option<string> linkError;
+            if (failedShaders.Count == 0)
+            {
+                gl.LinkProgram(programHandle);
+                linkError = ProgramUtilities.GetLinkStatus(gl, programHandle);
+            } else
+            {
+                var errorMessage = failedShaders
+                    .Select(stage => "Attached " + stage + " shader has an error")
+                    .Aggregate(new StringBuilder(), (current, next) => current.Append("\n").Append(next))
+                    .ToString();
+                linkError = Option<string>.Some(errorMessage);
+            }
+
+            gl.DeleteProgram(programHandle);
+
+            foreach (var shaderHandle in shaderHandles)
+            {
+                // no need to call glDetachShader - the program has already been deleted
+                gl.DeleteShader(shaderHandle);
+            }
+            
+            var program = pair.Key;
+            var result = new ProgramValidationResult(
+                programInputs.Program, programInputs.ModCount, linkError);
+            lock (this)
+            {
+                programValidationResults[program] = result;
+            }
+        }
+    }
+
+    public void PublishValidationResults()
+    {
+        IDictionary<Shader, ShaderValidationResult> localShaderValidationResults;
+        IDictionary<Program, ProgramValidationResult> localProgramValidationResults;
+        lock (this)
+        {
+            localShaderValidationResults = shaderValidationResults;
+            localProgramValidationResults = programValidationResults;
+            shaderValidationResults = new Dictionary<Shader, ShaderValidationResult>(localShaderValidationResults.Count);
+            programValidationResults = new Dictionary<Program, ProgramValidationResult>(localProgramValidationResults.Count);
+        }
+
+        foreach (var result in localShaderValidationResults.Values)
+        {
+            if (result.ModCount == result.Shader.ModCount)
+            {
+                var error = result.ValidationError;
+                if (error.IsSome)
+                {
+                    result.Shader.InvalidateSource(error.Value);
+                } else
+                {
+                    result.Shader.ValidateSource();
+                }
+            }
+        }
+
+        foreach (var result in localProgramValidationResults.Values)
+        {
+            if (result.ModCount == result.Program.ModCount)
+            {
+                var error = result.ValidationError;
+                if (error.IsSome)
+                {
+                    result.Program.InvalidateProgramLinkage(error.Value);
+                } else
+                {
+                    result.Program.ValidateProgramLinkage();
+                }
+            }
+        }
+    }
+
+    private struct ShaderValidationInputs
+    {
+        public readonly Shader Shader;
+
+        public readonly ProgramStage Stage;
+
+        public readonly string SourceToValidate;
+
+        public readonly uint ModCount;
+
+        public ShaderValidationInputs(Shader shader)
+        {
+            Shader = shader;
+            Stage = shader.Stage;
+            SourceToValidate = shader.Source;
+            ModCount = shader.ModCount;
+        }
+    }
+
+    private struct ShaderValidationResult
+    {
+        public readonly Shader Shader;
+
+        public readonly uint ModCount;
+
+        public readonly Option<string> ValidationError;
+
+        public ShaderValidationResult(
+            Shader shader, uint modCount, Option<string> validationError)
+        {
+            Shader = shader;
+            ModCount = modCount;
+            ValidationError = validationError;
+        }
+    }
+
+    private struct ProgramValidationInputs
+    {
+        public readonly Program Program;
+
+        public readonly IList<ShaderValidationInputs> AttachedShaders;
+
+        public readonly uint ModCount;
+
+        public ProgramValidationInputs(Program program)
+        {
+            Program = program;
+            AttachedShaders = program.ShadersByStage.Values
+                .Select(shader => new ShaderValidationInputs(shader))
+                .ToList();
+            ModCount = program.ModCount;
+        }
+    }
+
+    private struct ProgramValidationResult
+    {
+        public readonly Program Program;
+
+        public readonly uint ModCount;
+
+        public readonly Option<string> ValidationError;
+
+        public ProgramValidationResult(
+            Program program, uint modCount, Option<string> validationError)
+        {
+            Program = program;
+            ModCount = modCount;
+            ValidationError = validationError;
         }
     }
 }

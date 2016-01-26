@@ -1,0 +1,30 @@
+﻿<UserControl x:Class="ShaderBaker.View.ShaderListItemView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:local="clr-namespace:ShaderBaker.View">
+    <UserControl.Resources>
+        <local:ShaderStageToIconConverter x:Key="StageIconConverter"/>
+        <local:ValidityToColorConverter x:Key="ValidityToColorConverter"/>
+    </UserControl.Resources>
+    <StackPanel x:Name="LayoutRoot" Orientation="Horizontal">
+        <Image Source="{Binding ShaderStage, Converter={StaticResource StageIconConverter}}"
+               Height="{Binding ActualHeight, ElementName=ShaderNameTextBlock}"
+               RenderOptions.BitmapScalingMode="Fant"/>
+        <Grid VerticalAlignment="Center">
+            <TextBlock Name="ShaderNameTextBlock"
+                       Margin="2,0,0,0"
+                       Text="{Binding ShaderName}"
+                       Foreground="{Binding ShaderSourceValidity, Converter={StaticResource ValidityToColorConverter}}"
+                       Visibility="Visible"
+                       VerticalAlignment="Center"/>
+            <TextBox Name="ShaderNameTextBox"
+                     Margin="2,0,0,0"
+                     Focusable="True"
+                     IsReadOnly="False"
+                     Visibility="Hidden"
+                     LostKeyboardFocus="ShaderNameTextBox_LostKeyboardFocus"
+                     Keyboard.KeyDown="ShaderNameTextBox_KeyDown"/>
+        </Grid>
+    </StackPanel>
+</UserControl>

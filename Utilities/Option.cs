@@ -5,12 +5,7 @@ namespace ShaderBaker.Utilities
 
 public struct Option<T> where T : class
 {
-    public static Option<T> empty()
-    {
-        return new Option<T>(null);
-    }
-
-    public static Option<T> of(T value)
+    public static Option<T> Some(T value)
     {
         if (value == null)
         {
@@ -20,25 +15,31 @@ public struct Option<T> where T : class
         return new Option<T>(value);
     }
     
+    public static Option<T> None()
+    {
+        return new Option<T>(null);
+    }
+    
     private readonly T value;
+    public T Value
+    {
+        get
+        {
+            if (IsNone)
+            {
+                throw new NullReferenceException("Cannot get value from an Option of type None");
+            }
+            return value;
+        }
+    }
+
+    public bool IsSome => value != null;
+
+    public bool IsNone => value == null;
     
     private Option(T value)
     {
         this.value = value;
-    }
-
-    public bool hasValue()
-    {
-        return this.value != null;
-    }
-
-    public T get()
-    {
-        if (value == null)
-        {
-            throw new NullReferenceException("Cannot get value from an empty Option");
-        }
-        return value;
     }
 }
 
